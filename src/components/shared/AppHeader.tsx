@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 type AppHeaderProps = {
   title: string;
@@ -43,6 +44,7 @@ export const AppHeader = ({ title, badge }: AppHeaderProps) => {
     <header className="border-b border-border bg-card sticky top-0 z-10">
       <div className="flex items-center justify-between h-16 px-6">
         <div className="flex items-center gap-3">
+          <SidebarTrigger className="mr-2" />
           <h1 className="text-2xl font-bold">{title}</h1>
           {badge && (
             <Badge variant="secondary" className="font-normal">
