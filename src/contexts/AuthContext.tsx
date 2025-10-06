@@ -48,16 +48,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, fullName: string, company: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
         data: {
           full_name: fullName,
+          company_name: company,
         },
       },
     });
+
+    // Se não houver erro e temos um usuário, chama a edge function para setup completo
+    if (!error && data.user) {
+      try {
+        await supabase.functions.invoke('handle-user-signup', {
+          body: {
+            userId: data.user.id,
+            email: data.user.email,
+            fullName: fullName,
+            companyName: company,
+          },
+        });
+      } catch (fnError) {
+        console.error('Error in post-signup setup:', fnError);
+      }
+    }
+
     return { error };
   };
 

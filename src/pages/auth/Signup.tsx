@@ -1,12 +1,17 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Mail, Lock, User, Building, ArrowRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const { signUp, user } = useAuth();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -16,20 +21,86 @@ const Signup = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validações
+    if (!formData.name.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Por favor, preencha seu nome completo",
+      });
+      return;
+    }
+
+    if (!formData.company.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Por favor, preencha o nome da empresa",
+      });
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Por favor, preencha seu e-mail",
+      });
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      toast({
+        variant: "destructive",
+        title: "Senha muito curta",
+        description: "A senha deve ter no mínimo 8 caracteres",
+      });
+      return;
+    }
+    
     if (formData.password !== formData.confirmPassword) {
-      // TODO: Show error toast
+      toast({
+        variant: "destructive",
+        title: "Senhas não conferem",
+        description: "As senhas digitadas não são iguais",
+      });
       return;
     }
     
     setIsLoading(true);
     
-    // TODO: Implement signup logic
-    setTimeout(() => {
+    const { error } = await signUp(
+      formData.email,
+      formData.password,
+      formData.name,
+      formData.company
+    );
+    
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar conta",
+        description: error.message === "User already registered"
+          ? "Este e-mail já está cadastrado"
+          : error.message,
+      });
       setIsLoading(false);
-    }, 1500);
+    } else {
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Redirecionando...",
+      });
+      // Navigation will happen via useEffect
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

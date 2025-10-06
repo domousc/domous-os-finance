@@ -5,21 +5,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Mail, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const ForgotPassword = () => {
+  const { resetPassword } = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Por favor, preencha seu e-mail",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
-    // TODO: Implement password reset logic
-    setTimeout(() => {
+    const { error } = await resetPassword(email);
+    
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar e-mail",
+        description: error.message,
+      });
       setIsLoading(false);
+    } else {
       setIsEmailSent(true);
-    }, 1500);
+      setIsLoading(false);
+    }
   };
 
   if (isEmailSent) {
