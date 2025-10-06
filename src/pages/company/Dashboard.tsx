@@ -83,7 +83,16 @@ export default function Dashboard() {
 
   // Usuários normais sem assinatura ativa são redirecionados
   useEffect(() => {
+    console.log("[Dashboard] Checking subscription redirect:", { 
+      roleLoading, 
+      isSuperAdmin, 
+      loading, 
+      hasActiveSubscription 
+    });
+    
+    // CRITICAL: Só redireciona após TODOS os loadings terminarem
     if (!roleLoading && !isSuperAdmin && !loading && !hasActiveSubscription) {
+      console.log("[Dashboard] Redirecting to subscription-expired");
       navigate("/dashboard/subscription-expired");
     }
   }, [roleLoading, isSuperAdmin, loading, hasActiveSubscription, navigate]);

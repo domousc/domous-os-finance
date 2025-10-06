@@ -47,9 +47,12 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const { isSuperAdmin, loading: roleLoading } = useRole();
 
   useEffect(() => {
+    console.log("[SubscriptionContext] Effect triggered", { user: !!user, isSuperAdmin, roleLoading });
+    
     // CRITICAL: Verificação de superadmin ANTES de qualquer coisa
     if (!roleLoading) {
       if (isSuperAdmin) {
+        console.log("[SubscriptionContext] User is superadmin - no subscription needed");
         // Superadmin não precisa de assinatura
         setSubscription(null);
         setPlan(null);
@@ -60,11 +63,13 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 
     // Se ainda está carregando role, espera
     if (roleLoading) {
+      console.log("[SubscriptionContext] Waiting for role to load...");
       return;
     }
 
     // Se não tem usuário, limpa tudo
     if (!user) {
+      console.log("[SubscriptionContext] No user - clearing subscription data");
       setSubscription(null);
       setPlan(null);
       setLoading(false);
@@ -72,6 +77,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const fetchSubscription = async () => {
+      console.log("[SubscriptionContext] Fetching subscription for user:", user.id);
       try {
         // Get user's company_id
         const { data: profile } = await supabase
@@ -80,7 +86,10 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
           .eq("id", user.id)
           .single();
 
+        console.log("[SubscriptionContext] User profile:", profile);
+
         if (!profile?.company_id) {
+          console.log("[SubscriptionContext] No company_id found");
           setLoading(false);
           return;
         }
@@ -94,6 +103,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
           .limit(1)
           .maybeSingle();
 
+        console.log("[SubscriptionContext] Subscription data:", subscriptionData);
         setSubscription(subscriptionData);
 
         // Get plan details if subscription exists
@@ -104,11 +114,13 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
             .eq("id", subscriptionData.plan_id)
             .single();
 
+          console.log("[SubscriptionContext] Plan data:", planData);
           setPlan(planData);
         }
       } catch (error) {
-        console.error("Error fetching subscription:", error);
+        console.error("[SubscriptionContext] Error fetching subscription:", error);
       } finally {
+        console.log("[SubscriptionContext] Loading complete");
         setLoading(false);
       }
     };
@@ -164,6 +176,14 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const daysRemaining = getDaysRemaining();
   const hasActiveSubscription = status === "active" || status === "trial";
   const isTrialExpired = status === "trial" && (daysRemaining === 0 || daysRemaining === null);
+
+  console.log("[SubscriptionContext] Final values:", { 
+    status, 
+    daysRemaining, 
+    hasActiveSubscription, 
+    loading,
+    subscription: !!subscription 
+  });
 
   const value = {
     subscription,

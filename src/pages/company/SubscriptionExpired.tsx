@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function SubscriptionExpired() {
   const navigate = useNavigate();
-  const { subscription, plan, status } = useSubscription();
+  const { subscription, plan, status, loading } = useSubscription();
   const { hasRole, isSuperAdmin, loading: roleLoading } = useRole();
   const { signOut } = useAuth();
 
@@ -20,6 +20,20 @@ export default function SubscriptionExpired() {
       navigate("/superadmin");
     }
   }, [roleLoading, isSuperAdmin, navigate]);
+
+  // Se a assinatura carregar como ativa, redireciona de volta ao dashboard
+  useEffect(() => {
+    console.log("[SubscriptionExpired] Checking subscription:", { 
+      loading: status === undefined, 
+      hasActiveSubscription: status === "active" || status === "trial",
+      status 
+    });
+    
+    if (!loading && (status === "active" || status === "trial")) {
+      console.log("[SubscriptionExpired] Active subscription found, redirecting to dashboard");
+      navigate("/dashboard", { replace: true });
+    }
+  }, [loading, status, navigate]);
 
   // Loading state
   if (roleLoading) {
