@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import SuperAdmin from "./pages/superadmin/SuperAdmin";
 import Plans from "./pages/superadmin/Plans";
 import Subscriptions from "./pages/superadmin/Subscriptions";
+import Companies from "./pages/superadmin/Companies";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/superadmin" element={<SuperAdmin />} />
                 <Route path="/superadmin/plans" element={<Plans />} />
                 <Route path="/superadmin/subscriptions" element={<Subscriptions />} />
+                <Route path="/superadmin/companies" element={<Companies />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
