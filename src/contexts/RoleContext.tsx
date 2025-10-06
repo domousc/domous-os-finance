@@ -8,6 +8,7 @@ type RoleContextType = {
   roles: UserRole[];
   hasRole: (role: UserRole) => boolean;
   isSuperAdmin: boolean;
+  isCompanyUser: boolean;
   loading: boolean;
 };
 

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { AppLayout, MenuItem } from "@/components/shared/AppLayout";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useRole } from "@/contexts/RoleContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -69,21 +70,35 @@ const menuItems: MenuItem[] = [
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { isSuperAdmin, loading: roleLoading } = useRole();
   const { subscription, plan, status, daysRemaining, loading, hasActiveSubscription } =
     useSubscription();
 
+  // Superadmin deve ser redirecionado para o painel de superadmin
   useEffect(() => {
-    if (!loading && !hasActiveSubscription) {
+    if (!roleLoading && isSuperAdmin) {
+      navigate("/superadmin");
+    }
+  }, [roleLoading, isSuperAdmin, navigate]);
+
+  // Usuários normais sem assinatura ativa são redirecionados
+  useEffect(() => {
+    if (!roleLoading && !isSuperAdmin && !loading && !hasActiveSubscription) {
       navigate("/dashboard/subscription-expired");
     }
-  }, [loading, hasActiveSubscription, navigate]);
+  }, [roleLoading, isSuperAdmin, loading, hasActiveSubscription, navigate]);
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
+  }
+
+  // Se for superadmin, não renderiza nada (será redirecionado)
+  if (isSuperAdmin) {
+    return null;
   }
 
   if (!hasActiveSubscription) {

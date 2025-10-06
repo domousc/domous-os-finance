@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
+import { useRole } from "./RoleContext";
 
 type SubscriptionStatus = "active" | "trial" | "expired" | "canceled" | "none";
 
@@ -43,9 +44,18 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { isSuperAdmin, loading: roleLoading } = useRole();
 
   useEffect(() => {
-    if (!user) {
+    // Superadmin não precisa de assinatura
+    if (!roleLoading && isSuperAdmin) {
+      setSubscription(null);
+      setPlan(null);
+      setLoading(false);
+      return;
+    }
+
+    if (!user || roleLoading) {
       setSubscription(null);
       setPlan(null);
       setLoading(false);
@@ -95,7 +105,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     };
 
     fetchSubscription();
-  }, [user]);
+  }, [user, isSuperAdmin, roleLoading]);
 
   const getStatus = (): SubscriptionStatus => {
     if (!subscription) return "none";
