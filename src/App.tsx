@@ -12,6 +12,7 @@ import Plans from "./pages/superadmin/Plans";
 import Subscriptions from "./pages/superadmin/Subscriptions";
 import Companies from "./pages/superadmin/Companies";
 import Users from "./pages/superadmin/Users";
+import Reports from "./pages/superadmin/Reports";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -39,6 +40,7 @@ const App = () => (
                 <Route path="/superadmin/subscriptions" element={<Subscriptions />} />
                 <Route path="/superadmin/companies" element={<Companies />} />
                 <Route path="/superadmin/users" element={<Users />} />
+                <Route path="/superadmin/reports" element={<Reports />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
