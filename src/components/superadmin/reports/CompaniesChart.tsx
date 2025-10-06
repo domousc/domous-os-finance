@@ -77,32 +77,35 @@ export const CompaniesChart = ({ period }: CompaniesChartProps) => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
-              <defs>
-                <linearGradient id="colorActiveCompanies" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.6} />
-                </linearGradient>
-                <linearGradient id="colorInactiveCompanies" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.9} />
-                  <stop offset="95%" stopColor="#94a3b8" stopOpacity={0.6} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="name" className="text-xs" />
-              <YAxis className="text-xs" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                }}
-              />
-              <Bar dataKey="Ativas" fill="url(#colorActiveCompanies)" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="Inativas" fill="url(#colorInactiveCompanies)" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="pointer-events-auto">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={data}>
+                <defs>
+                  <linearGradient id="colorActiveCompanies" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="colorInactiveCompanies" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.9} />
+                    <stop offset="95%" stopColor="#94a3b8" stopOpacity={0.6} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis dataKey="name" className="text-xs" />
+                <YAxis className="text-xs" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                  wrapperStyle={{ pointerEvents: 'auto' }}
+                />
+                <Bar dataKey="Ativas" fill="url(#colorActiveCompanies)" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="Inativas" fill="url(#colorInactiveCompanies)" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>
