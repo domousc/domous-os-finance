@@ -64,6 +64,7 @@ interface ServiceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   service: Service | null;
+  onSuccess?: () => void;
 }
 
 const PAYMENT_METHODS = [
@@ -78,6 +79,7 @@ export const ServiceDialog = ({
   open,
   onOpenChange,
   service,
+  onSuccess,
 }: ServiceDialogProps) => {
   const [companies, setCompanies] = useState<any[]>([]);
   const [featureInput, setFeatureInput] = useState("");
@@ -186,6 +188,7 @@ export const ServiceDialog = ({
         });
       }
 
+      onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
       toast({

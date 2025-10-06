@@ -40,9 +40,10 @@ interface Service {
 
 interface ServicesTableProps {
   onEdit: (service: Service) => void;
+  onDataChange?: () => void;
 }
 
-export const ServicesTable = ({ onEdit }: ServicesTableProps) => {
+export const ServicesTable = ({ onEdit, onDataChange }: ServicesTableProps) => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -57,6 +58,7 @@ export const ServicesTable = ({ onEdit }: ServicesTableProps) => {
 
       if (error) throw error;
       setServices(data || []);
+      onDataChange?.();
     } catch (error: any) {
       toast({
         title: "Erro ao carregar serviços",
