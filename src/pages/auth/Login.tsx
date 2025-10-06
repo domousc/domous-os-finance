@@ -12,8 +12,8 @@ const Login = () => {
   const navigate = useNavigate();
   const { signIn, user } = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState("fabiozesk@gmail.com");
-  const [password, setPassword] = useState("12345678");
+  const [email, setEmail] = useState(false);
+  const [password, setPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
