@@ -42,11 +42,13 @@ export const RoleProvider = ({ children }: { children: React.ReactNode }) => {
 
   const hasRole = (role: UserRole) => roles.includes(role);
   const isSuperAdmin = roles.includes("superadmin");
+  const isCompanyUser = !isSuperAdmin && roles.length > 0;
 
   const value = {
     roles,
     hasRole,
     isSuperAdmin,
+    isCompanyUser,
     loading,
   };
 

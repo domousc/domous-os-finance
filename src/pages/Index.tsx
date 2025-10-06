@@ -21,6 +21,9 @@ const Index = () => {
       } else if (isSuperAdmin) {
         hasNavigated.current = true;
         navigate("/superadmin");
+      } else {
+        hasNavigated.current = true;
+        navigate("/dashboard");
       }
     }
   }, [user, authLoading, roleLoading, isSuperAdmin, navigate]);

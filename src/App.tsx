@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RoleProvider } from "@/contexts/RoleContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import SuperAdmin from "./pages/superadmin/SuperAdmin";
 import Plans from "./pages/superadmin/Plans";
@@ -14,6 +16,8 @@ import Companies from "./pages/superadmin/Companies";
 import Users from "./pages/superadmin/Users";
 import Reports from "./pages/superadmin/Reports";
 import Settings from "./pages/superadmin/Settings";
+import Dashboard from "./pages/company/Dashboard";
+import SubscriptionExpired from "./pages/company/SubscriptionExpired";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -26,28 +30,50 @@ const App = () => (
     <ThemeProvider defaultTheme="light">
       <AuthProvider>
         <RoleProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/dashboard" element={<Index />} />
-                <Route path="/superadmin" element={<SuperAdmin />} />
-                <Route path="/superadmin/plans" element={<Plans />} />
-                <Route path="/superadmin/subscriptions" element={<Subscriptions />} />
-                <Route path="/superadmin/companies" element={<Companies />} />
-                <Route path="/superadmin/users" element={<Users />} />
-                <Route path="/superadmin/reports" element={<Reports />} />
-                <Route path="/superadmin/settings" element={<Settings />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
+          <SubscriptionProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  
+                  {/* Company Dashboard Routes */}
+                  <Route 
+                    path="/dashboard" 
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/dashboard/subscription-expired" 
+                    element={
+                      <ProtectedRoute>
+                        <SubscriptionExpired />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* SuperAdmin Routes */}
+                  <Route path="/superadmin" element={<SuperAdmin />} />
+                  <Route path="/superadmin/plans" element={<Plans />} />
+                  <Route path="/superadmin/subscriptions" element={<Subscriptions />} />
+                  <Route path="/superadmin/companies" element={<Companies />} />
+                  <Route path="/superadmin/users" element={<Users />} />
+                  <Route path="/superadmin/reports" element={<Reports />} />
+                  <Route path="/superadmin/settings" element={<Settings />} />
+                  
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </SubscriptionProvider>
         </RoleProvider>
       </AuthProvider>
     </ThemeProvider>
