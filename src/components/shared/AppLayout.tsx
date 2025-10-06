@@ -58,7 +58,7 @@ export const AppLayout = ({
             <Button
               variant={active ? "secondary" : "ghost"}
               className={cn(
-                "w-full justify-start gap-3 transition-all",
+                "w-full justify-start gap-3 transition-all overflow-hidden",
                 level > 0 && "ml-6"
               )}
               onClick={() => {
@@ -70,7 +70,14 @@ export const AppLayout = ({
               }}
             >
               <item.icon className="h-5 w-5 shrink-0" />
-              {isHovered && <span className="truncate">{item.label}</span>}
+              <span 
+                className={cn(
+                  "truncate transition-all duration-300",
+                  isHovered ? "opacity-100 w-auto" : "opacity-0 w-0"
+                )}
+              >
+                {item.label}
+              </span>
             </Button>
           </TooltipTrigger>
           {!isHovered && (
@@ -97,7 +104,8 @@ export const AppLayout = ({
         <aside
           className={cn(
             "border-r border-border bg-card transition-all duration-300 flex flex-col",
-            isHovered ? "w-64" : "w-20"
+            isHovered ? "w-64" : "w-20",
+            !isHovered && "overflow-hidden"
           )}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
