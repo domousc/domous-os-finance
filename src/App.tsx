@@ -16,6 +16,7 @@ import Plans from "./pages/superadmin/Plans";
 import Subscriptions from "./pages/superadmin/Subscriptions";
 import Companies from "./pages/superadmin/Companies";
 import Users from "./pages/superadmin/Users";
+import Services from "./pages/superadmin/Services";
 import Reports from "./pages/superadmin/Reports";
 import Settings from "./pages/superadmin/Settings";
 import Dashboard from "./pages/company/Dashboard";
@@ -92,13 +93,14 @@ const App = () => (
                   />
                   
                   {/* SuperAdmin Routes */}
-                  <Route path="/superadmin" element={<SuperAdmin />} />
-                  <Route path="/superadmin/plans" element={<Plans />} />
-                  <Route path="/superadmin/subscriptions" element={<Subscriptions />} />
-                  <Route path="/superadmin/companies" element={<Companies />} />
-                  <Route path="/superadmin/users" element={<Users />} />
-                  <Route path="/superadmin/reports" element={<Reports />} />
-                  <Route path="/superadmin/settings" element={<Settings />} />
+              <Route path="/superadmin" element={<SuperAdmin />} />
+              <Route path="/superadmin/plans" element={<Plans />} />
+              <Route path="/superadmin/subscriptions" element={<Subscriptions />} />
+              <Route path="/superadmin/companies" element={<Companies />} />
+              <Route path="/superadmin/users" element={<Users />} />
+              <Route path="/superadmin/services" element={<Services />} />
+              <Route path="/superadmin/reports" element={<Reports />} />
+              <Route path="/superadmin/settings" element={<Settings />} />
                   
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

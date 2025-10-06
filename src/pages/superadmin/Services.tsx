@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
-import { useRole } from "@/contexts/RoleContext";
 import { SuperAdminLayout } from "@/components/superadmin/SuperAdminLayout";
 import { ServicesHeader } from "@/components/superadmin/services/ServicesHeader";
 import { ServicesTable } from "@/components/superadmin/services/ServicesTable";
@@ -12,29 +10,19 @@ interface Service {
   description: string | null;
   price: number;
   service_type: "subscription" | "one_time" | "recurring";
-  billing_cycle: "monthly" | "quarterly" | "semiannual" | "annual" | null;
-  payment_methods: string[];
-  sku: string | null;
-  features: string[];
+  billing_cycle: "monthly" | "annual" | "semiannual" | null;
+  payment_methods: any;
+  features: any;
   status: "active" | "inactive" | "archived";
   company_id: string | null;
+  sku: string | null;
 }
 
 const Services = () => {
-  const { isSuperAdmin, loading } = useRole();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  if (loading) {
-    return null;
-  }
-
-  if (!isSuperAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  const handleAddService = () => {
+  const handleNewService = () => {
     setSelectedService(null);
     setDialogOpen(true);
   };
@@ -44,22 +32,20 @@ const Services = () => {
     setDialogOpen(true);
   };
 
-  const handleSuccess = () => {
-    setRefreshTrigger((prev) => prev + 1);
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedService(null);
   };
 
   return (
     <SuperAdminLayout>
-      <div className="space-y-6">
-        <ServicesHeader onAddService={handleAddService} />
-        <ServicesTable onEdit={handleEditService} refreshTrigger={refreshTrigger} />
-        <ServiceDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          service={selectedService}
-          onSuccess={handleSuccess}
-        />
-      </div>
+      <ServicesHeader onNewService={handleNewService} />
+      <ServicesTable onEdit={handleEditService} />
+      <ServiceDialog
+        open={dialogOpen}
+        onOpenChange={handleCloseDialog}
+        service={selectedService}
+      />
     </SuperAdminLayout>
   );
 };
