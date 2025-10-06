@@ -57,28 +57,33 @@ export const SuperAdminLayout = ({ children }: SuperAdminLayoutProps) => {
                 const Icon = item.icon;
                 const isActive = window.location.pathname === item.path;
                 
-                return (
-                  <Tooltip key={item.path} delayDuration={0}>
+                return !isHovered ? (
+                  <Tooltip key={item.path} delayDuration={300}>
                     <TooltipTrigger asChild>
                       <Button
                         variant={isActive ? "default" : "ghost"}
-                        className={`w-full justify-start gap-3 h-11 ${
-                          !isHovered && "justify-center px-0"
-                        }`}
+                        className="w-full justify-center px-0 h-11"
                         onClick={() => navigate(item.path)}
                       >
-                        <Icon className="w-5 h-5 flex-shrink-0 stroke-[1.5]" />
-                        {isHovered && (
-                          <span className="whitespace-nowrap">{item.label}</span>
-                        )}
+                        <Icon className="w-6 h-6 flex-shrink-0 stroke-[1.5]" />
                       </Button>
                     </TooltipTrigger>
-                    {!isHovered && (
-                      <TooltipContent side="right">
-                        <p>{item.label}</p>
-                      </TooltipContent>
-                    )}
+                    <TooltipContent side="right">
+                      <p>{item.label}</p>
+                    </TooltipContent>
                   </Tooltip>
+                ) : (
+                  <Button
+                    key={item.path}
+                    variant={isActive ? "default" : "ghost"}
+                    className="w-full justify-start gap-3 h-11"
+                    onClick={() => navigate(item.path)}
+                  >
+                    <Icon className="w-6 h-6 flex-shrink-0 stroke-[1.5]" />
+                    <span className="whitespace-nowrap animate-in fade-in-50 duration-200">
+                      {item.label}
+                    </span>
+                  </Button>
                 );
               })}
             </nav>
