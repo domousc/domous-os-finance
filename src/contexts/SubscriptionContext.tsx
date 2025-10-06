@@ -47,15 +47,24 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const { isSuperAdmin, loading: roleLoading } = useRole();
 
   useEffect(() => {
-    // Superadmin não precisa de assinatura
-    if (!roleLoading && isSuperAdmin) {
-      setSubscription(null);
-      setPlan(null);
-      setLoading(false);
+    // CRITICAL: Verificação de superadmin ANTES de qualquer coisa
+    if (!roleLoading) {
+      if (isSuperAdmin) {
+        // Superadmin não precisa de assinatura
+        setSubscription(null);
+        setPlan(null);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Se ainda está carregando role, espera
+    if (roleLoading) {
       return;
     }
 
-    if (!user || roleLoading) {
+    // Se não tem usuário, limpa tudo
+    if (!user) {
       setSubscription(null);
       setPlan(null);
       setLoading(false);

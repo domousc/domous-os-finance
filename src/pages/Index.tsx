@@ -15,15 +15,15 @@ const Index = () => {
     if (hasNavigated.current) return;
     
     if (!authLoading && !roleLoading) {
+      hasNavigated.current = true;
+      
       if (!user) {
-        hasNavigated.current = true;
-        navigate("/login");
+        navigate("/login", { replace: true });
       } else if (isSuperAdmin) {
-        hasNavigated.current = true;
-        navigate("/superadmin");
+        // CRITICAL: Superadmin vai direto para /superadmin
+        navigate("/superadmin", { replace: true });
       } else {
-        hasNavigated.current = true;
-        navigate("/dashboard");
+        navigate("/dashboard", { replace: true });
       }
     }
   }, [user, authLoading, roleLoading, isSuperAdmin, navigate]);
@@ -43,36 +43,8 @@ const Index = () => {
     );
   }
 
-  if (!authLoading && !roleLoading && isSuperAdmin) {
-    return null;
-  }
-
-  return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-2">
-              Bem-vindo, {user?.email}
-            </p>
-          </div>
-          <Button
-            onClick={handleSignOut}
-            variant="outline"
-            className="gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Sair
-          </Button>
-        </div>
-
-        <div className="bg-card p-8 rounded-lg border border-border">
-          <p className="text-lg">Dashboard da empresa em desenvolvimento...</p>
-        </div>
-      </div>
-    </div>
-  );
+  // Não renderiza nada, apenas redireciona
+  return null;
 };
 
 export default Index;
