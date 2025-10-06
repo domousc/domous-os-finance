@@ -145,6 +145,62 @@ export type Database = {
           },
         ]
       }
+      services: {
+        Row: {
+          billing_cycle: Database["public"]["Enums"]["billing_period"] | null
+          company_id: string | null
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          payment_methods: Json | null
+          price: number
+          service_type: Database["public"]["Enums"]["service_type"]
+          sku: string | null
+          status: Database["public"]["Enums"]["service_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: Database["public"]["Enums"]["billing_period"] | null
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          payment_methods?: Json | null
+          price?: number
+          service_type?: Database["public"]["Enums"]["service_type"]
+          sku?: string | null
+          status?: Database["public"]["Enums"]["service_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: Database["public"]["Enums"]["billing_period"] | null
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          payment_methods?: Json | null
+          price?: number
+          service_type?: Database["public"]["Enums"]["service_type"]
+          sku?: string | null
+          status?: Database["public"]["Enums"]["service_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           asaas_subscription_id: string | null
@@ -282,6 +338,8 @@ export type Database = {
       app_role: "superadmin" | "admin" | "gestor" | "financeiro" | "operador"
       billing_period: "monthly" | "semiannual" | "annual"
       plan_status: "active" | "inactive"
+      service_status: "active" | "inactive" | "archived"
+      service_type: "subscription" | "one_time" | "recurring"
       subscription_status:
         | "active"
         | "pending"
@@ -418,6 +476,8 @@ export const Constants = {
       app_role: ["superadmin", "admin", "gestor", "financeiro", "operador"],
       billing_period: ["monthly", "semiannual", "annual"],
       plan_status: ["active", "inactive"],
+      service_status: ["active", "inactive", "archived"],
+      service_type: ["subscription", "one_time", "recurring"],
       subscription_status: [
         "active",
         "pending",
