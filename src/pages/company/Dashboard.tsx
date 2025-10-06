@@ -76,7 +76,9 @@ export default function Dashboard() {
 
   // Superadmin deve ser redirecionado para o painel de superadmin
   useEffect(() => {
+    console.log("[Dashboard] Role check:", { roleLoading, isSuperAdmin });
     if (!roleLoading && isSuperAdmin) {
+      console.log("[Dashboard] Redirecting superadmin to /superadmin");
       navigate("/superadmin");
     }
   }, [roleLoading, isSuperAdmin, navigate]);

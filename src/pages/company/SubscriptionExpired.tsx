@@ -1,15 +1,44 @@
 import { useNavigate } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
+import { useEffect } from "react";
+import { AlertCircle, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useRole } from "@/contexts/RoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SubscriptionExpired() {
   const navigate = useNavigate();
   const { subscription, plan, status } = useSubscription();
-  const { hasRole } = useRole();
+  const { hasRole, isSuperAdmin, loading: roleLoading } = useRole();
+  const { signOut } = useAuth();
+
+  // Superadmin nunca deve ver esta página
+  useEffect(() => {
+    if (!roleLoading && isSuperAdmin) {
+      navigate("/superadmin");
+    }
+  }, [roleLoading, isSuperAdmin, navigate]);
+
+  // Loading state
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Se for superadmin, não renderiza nada (será redirecionado)
+  if (isSuperAdmin) {
+    return null;
+  }
+
+  const handleBackToLogin = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   const canRenew = hasRole("admin") || hasRole("gestor");
 
@@ -87,10 +116,11 @@ export default function SubscriptionExpired() {
 
             <Button
               variant="outline"
-              onClick={() => navigate("/login")}
-              className="w-full"
+              onClick={handleBackToLogin}
+              className="w-full gap-2"
             >
-              Voltar para Login
+              <LogOut className="h-4 w-4" />
+              Deslogar e Voltar
             </Button>
           </div>
 

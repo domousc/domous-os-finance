@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { RoleProvider } from "@/contexts/RoleContext";
+import { RoleProvider, useRole } from "@/contexts/RoleContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -24,6 +26,32 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// Componente para proteger rotas de empresa contra acesso de superadmin
+const CompanyRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isSuperAdmin, loading } = useRole();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && isSuperAdmin) {
+      navigate("/superadmin");
+    }
+  }, [loading, isSuperAdmin, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (isSuperAdmin) {
+    return null;
+  }
+
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -46,7 +74,9 @@ const App = () => (
                     path="/dashboard" 
                     element={
                       <ProtectedRoute>
-                        <Dashboard />
+                        <CompanyRoute>
+                          <Dashboard />
+                        </CompanyRoute>
                       </ProtectedRoute>
                     } 
                   />
@@ -54,7 +84,9 @@ const App = () => (
                     path="/dashboard/subscription-expired" 
                     element={
                       <ProtectedRoute>
-                        <SubscriptionExpired />
+                        <CompanyRoute>
+                          <SubscriptionExpired />
+                        </CompanyRoute>
                       </ProtectedRoute>
                     } 
                   />
