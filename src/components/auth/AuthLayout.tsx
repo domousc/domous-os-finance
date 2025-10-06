@@ -15,16 +15,15 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
 
   return (
     <div className="min-h-screen w-full flex">
-      {/* Left Side - Hero Image with Animations */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/70 animate-gradient">
-        {/* Animated Background Image */}
+      {/* Left Side - Hero Section */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#0e0e0e] via-[#1a0a14] to-[#0e0e0e]">
+        {/* Animated Background Image with lower opacity */}
         <div className="absolute inset-0">
           <img
             src={authHero}
             alt="Domous OS"
-            className="w-full h-full object-cover opacity-30 scale-105 animate-slow-zoom"
+            className="w-full h-full object-cover opacity-10 scale-105 animate-slow-zoom"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-primary/50 to-black/60 animate-gradient-shift" />
         </div>
 
         {/* Floating Financial Icons */}
@@ -33,66 +32,79 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
         {/* Floating Particles */}
         <AnimatedParticles />
 
-        {/* Animated Glow Effects */}
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse-glow" />
-        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/15 rounded-full blur-2xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
-        
-        <div className="relative z-10 flex flex-col justify-center px-12 lg:px-16 xl:px-24 text-white">
-          {/* Logo and Title with Stagger Animation */}
-          <div className="mb-8 space-y-4">
-            <h1 className="text-5xl xl:text-6xl font-bold tracking-tight animate-slide-in-left">
-              <span className="inline-block hover:scale-110 transition-transform duration-300 cursor-default">
-                Domous
-              </span>{" "}
-              <span className="inline-block hover:scale-110 transition-transform duration-300 cursor-default text-white/90">
-                OS
-              </span>
-            </h1>
-            <div className="w-20 h-1 bg-white/80 rounded-full animate-expand" />
+        {/* Large Circular Gradient Element - Right Side */}
+        <div className="absolute -right-40 top-1/2 -translate-y-1/2 w-[600px] h-[600px]">
+          <div className="relative w-full h-full">
+            {/* Main gradient circle */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/40 via-primary/20 to-transparent blur-3xl animate-pulse-slow" />
+            {/* Curved line effect */}
+            <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-spin-slow" style={{ animationDuration: '20s' }} />
+            {/* Inner glow */}
+            <div className="absolute top-1/4 left-1/4 w-1/2 h-1/2 rounded-full bg-primary/50 blur-2xl animate-pulse-glow" />
           </div>
-          
-          {/* Main Tagline */}
-          <p className="text-xl xl:text-2xl font-light leading-relaxed max-w-lg mb-12 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            Transforme a gestão financeira da sua empresa com{" "}
-            <span className="font-semibold text-white inline-block hover:scale-105 transition-transform">
-              inteligência
-            </span>{" "}
-            e{" "}
-            <span className="font-semibold text-white inline-block hover:scale-105 transition-transform">
-              simplicidade
-            </span>.
-          </p>
-          
-          {/* Feature List with Staggered Animation */}
-          <div className="space-y-4">
-            {[
-              { text: "Controle total em tempo real", delay: "0.3s" },
-              { text: "Multi-tenant e escalável", delay: "0.4s" },
-              { text: "Segurança de nível empresarial", delay: "0.5s" },
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 group cursor-default animate-fade-in-up"
-                style={{ animationDelay: item.delay }}
-              >
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse-slow group-hover:scale-150 transition-transform duration-300" />
-                <p className="text-lg text-white/90 group-hover:text-white group-hover:translate-x-2 transition-all duration-300">
-                  {item.text}
-                </p>
-              </div>
-            ))}
+        </div>
+
+        {/* Trending Up Icon - Top Right */}
+        <div className="absolute top-12 right-12 text-primary animate-float-icon z-20">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+        </div>
+        
+        <div className="relative z-10 flex flex-col justify-center px-12 lg:px-16 xl:px-24 text-white max-w-2xl">
+          {/* Badge */}
+          <div className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/50 bg-primary/10 backdrop-blur-sm w-fit animate-fade-in-up">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span className="text-sm font-medium text-primary">Sistema de Gestão Inteligente</span>
           </div>
 
-          {/* Decorative Elements */}
-          <div className="mt-16 flex gap-3 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="w-12 h-1 bg-white/30 rounded-full hover:bg-white/60 transition-all duration-500 hover:w-20"
-                style={{ animationDelay: `${0.7 + i * 0.1}s` }}
-              />
-            ))}
+          {/* Main Heading */}
+          <div className="mb-6 space-y-2">
+            <h1 className="text-5xl xl:text-6xl font-bold leading-tight animate-slide-in-left">
+              Transforme sua
+            </h1>
+            <h1 className="text-5xl xl:text-6xl font-bold leading-tight text-primary animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+              Gestão Empresarial
+            </h1>
+          </div>
+          
+          {/* Subtitle with icon */}
+          <div className="flex items-start gap-3 mb-12 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary mt-1 flex-shrink-0">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <p className="text-lg xl:text-xl text-white/80 leading-relaxed">
+              Controle financeiro, CRM completo, comissionamento inteligente e muito mais em uma plataforma unificada.
+            </p>
+          </div>
+          
+          {/* Stats */}
+          <div className="flex gap-12 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="space-y-1">
+              <div className="text-4xl font-bold text-primary">100+</div>
+              <div className="text-sm text-white/60">Empresas</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-4xl font-bold text-primary">24/7</div>
+              <div className="text-sm text-white/60">Disponibilidade</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-4xl font-bold text-primary">∞</div>
+              <div className="text-sm text-white/60">Possibilidades</div>
+            </div>
+          </div>
+
+          {/* Users Icon - Bottom */}
+          <div className="mt-16 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary/60">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
           </div>
         </div>
       </div>
