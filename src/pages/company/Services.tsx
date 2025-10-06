@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { SuperAdminLayout } from "@/components/superadmin/SuperAdminLayout";
+import { AppLayout } from "@/components/shared/AppLayout";
 import { ServicesHeader } from "@/components/superadmin/services/ServicesHeader";
 import { ServicesTable } from "@/components/superadmin/services/ServicesTable";
 import { ServiceDialog } from "@/components/superadmin/services/ServiceDialog";
+import { Briefcase } from "lucide-react";
+import type { MenuItem } from "@/components/shared/AppLayout";
 
 interface Service {
   id: string;
@@ -17,6 +19,10 @@ interface Service {
   company_id: string | null;
   sku: string | null;
 }
+
+const menuItems: MenuItem[] = [
+  { icon: Briefcase, label: "Serviços", path: "/dashboard/services" },
+];
 
 const Services = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -38,7 +44,11 @@ const Services = () => {
   };
 
   return (
-    <SuperAdminLayout>
+    <AppLayout
+      menuItems={menuItems}
+      headerTitle="Domous OS"
+      headerBadge="Painel de Gestão"
+    >
       <ServicesHeader onNewService={handleNewService} />
       <ServicesTable onEdit={handleEditService} />
       <ServiceDialog
@@ -46,7 +56,7 @@ const Services = () => {
         onOpenChange={handleCloseDialog}
         service={selectedService}
       />
-    </SuperAdminLayout>
+    </AppLayout>
   );
 };
 

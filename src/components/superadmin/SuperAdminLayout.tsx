@@ -9,7 +9,6 @@ import {
   FileText,
   Building2,
   Users,
-  Briefcase,
   BarChart3,
   Settings,
 } from "lucide-react";
@@ -30,7 +29,6 @@ const menuItems = [
   { icon: FileText, label: "Assinaturas", path: "/superadmin/subscriptions" },
   { icon: Building2, label: "Empresas", path: "/superadmin/companies" },
   { icon: Users, label: "Usuários", path: "/superadmin/users" },
-  { icon: Briefcase, label: "Serviços", path: "/superadmin/services" },
   { icon: BarChart3, label: "Relatórios", path: "/superadmin/reports" },
   { icon: Settings, label: "Configurações", path: "/superadmin/settings" },
 ];

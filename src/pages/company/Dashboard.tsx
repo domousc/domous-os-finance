@@ -10,6 +10,7 @@ import {
   Settings,
   UserPlus,
   UserCircle,
+  Briefcase,
 } from "lucide-react";
 import { AppLayout, MenuItem } from "@/components/shared/AppLayout";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -28,6 +29,11 @@ const menuItems: MenuItem[] = [
     icon: Users,
     label: "Clientes",
     path: "/dashboard/clients",
+  },
+  {
+    icon: Briefcase,
+    label: "Serviços",
+    path: "/dashboard/services",
   },
   {
     icon: DollarSign,

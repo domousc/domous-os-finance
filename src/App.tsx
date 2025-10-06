@@ -16,9 +16,9 @@ import Plans from "./pages/superadmin/Plans";
 import Subscriptions from "./pages/superadmin/Subscriptions";
 import Companies from "./pages/superadmin/Companies";
 import Users from "./pages/superadmin/Users";
-import Services from "./pages/superadmin/Services";
 import Reports from "./pages/superadmin/Reports";
 import Settings from "./pages/superadmin/Settings";
+import CompanyServices from "./pages/company/Services";
 import Dashboard from "./pages/company/Dashboard";
 import SubscriptionExpired from "./pages/company/SubscriptionExpired";
 import Login from "./pages/auth/Login";
@@ -71,26 +71,36 @@ const App = () => (
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   
                   {/* Company Dashboard Routes */}
-                  <Route 
-                    path="/dashboard" 
-                    element={
-                      <ProtectedRoute>
-                        <CompanyRoute>
-                          <Dashboard />
-                        </CompanyRoute>
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/dashboard/subscription-expired" 
-                    element={
-                      <ProtectedRoute>
-                        <CompanyRoute>
-                          <SubscriptionExpired />
-                        </CompanyRoute>
-                      </ProtectedRoute>
-                    } 
-                  />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <Dashboard />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/services"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <CompanyServices />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/subscription-expired"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <SubscriptionExpired />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
                   
                   {/* SuperAdmin Routes */}
               <Route path="/superadmin" element={<SuperAdmin />} />
@@ -98,7 +108,6 @@ const App = () => (
               <Route path="/superadmin/subscriptions" element={<Subscriptions />} />
               <Route path="/superadmin/companies" element={<Companies />} />
               <Route path="/superadmin/users" element={<Users />} />
-              <Route path="/superadmin/services" element={<Services />} />
               <Route path="/superadmin/reports" element={<Reports />} />
               <Route path="/superadmin/settings" element={<Settings />} />
                   
