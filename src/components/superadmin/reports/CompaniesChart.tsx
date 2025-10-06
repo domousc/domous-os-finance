@@ -99,7 +99,7 @@ export const CompaniesChart = ({ period }: CompaniesChartProps) => {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "8px",
                   }}
-                  wrapperStyle={{ pointerEvents: 'auto' }}
+                  wrapperStyle={{ pointerEvents: 'none' }}
                 />
                 <Bar dataKey="Ativas" fill="url(#colorActiveCompanies)" radius={[8, 8, 0, 0]} />
                 <Bar dataKey="Inativas" fill="url(#colorInactiveCompanies)" radius={[8, 8, 0, 0]} />

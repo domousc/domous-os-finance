@@ -89,7 +89,7 @@ export const RevenueChart = ({ period }: RevenueChartProps) => {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "8px",
                   }}
-                  wrapperStyle={{ pointerEvents: 'auto' }}
+                  wrapperStyle={{ pointerEvents: 'none' }}
                   formatter={(value: number) =>
                     `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
                   }

@@ -99,7 +99,7 @@ export const SubscriptionsChart = ({ period }: SubscriptionsChartProps) => {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "8px",
                   }}
-                  wrapperStyle={{ pointerEvents: 'auto' }}
+                  wrapperStyle={{ pointerEvents: 'none' }}
                 />
                 <Area
                   type="monotone"

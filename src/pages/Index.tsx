@@ -16,6 +16,12 @@ const Index = () => {
     }
   }, [user, authLoading, navigate]);
 
+  useEffect(() => {
+    if (!authLoading && !roleLoading && isSuperAdmin) {
+      navigate("/superadmin");
+    }
+  }, [authLoading, roleLoading, isSuperAdmin, navigate]);
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/login");
@@ -31,8 +37,7 @@ const Index = () => {
     );
   }
 
-  if (isSuperAdmin) {
-    navigate("/superadmin");
+  if (!authLoading && !roleLoading && isSuperAdmin) {
     return null;
   }
 

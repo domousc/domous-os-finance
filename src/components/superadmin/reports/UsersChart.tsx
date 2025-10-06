@@ -104,7 +104,7 @@ export const UsersChart = ({ period }: UsersChartProps) => {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "8px",
                   }}
-                  wrapperStyle={{ pointerEvents: 'auto' }}
+                  wrapperStyle={{ pointerEvents: 'none' }}
                 />
                 <Legend />
               </PieChart>

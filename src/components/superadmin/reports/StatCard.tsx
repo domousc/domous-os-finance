@@ -52,10 +52,10 @@ export const StatCard = ({
 
   return (
     <Card
-      className="group hover:shadow-xl transition-all duration-500 hover:-translate-y-1 border-2 overflow-hidden animate-in fade-in-50 slide-in-from-bottom"
+      className="relative group hover:shadow-xl transition-all duration-500 hover:-translate-y-1 border-2 overflow-hidden animate-in fade-in-50 slide-in-from-bottom"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
