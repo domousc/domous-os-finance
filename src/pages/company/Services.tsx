@@ -89,7 +89,6 @@ const menuItems: MenuItem[] = [
 const Services = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleNewService = () => {
     setSelectedService(null);
@@ -106,10 +105,6 @@ const Services = () => {
     setSelectedService(null);
   };
 
-  const handleSuccess = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
-
   return (
     <AppLayout
       menuItems={menuItems}
@@ -117,16 +112,11 @@ const Services = () => {
       headerBadge="Painel de Gestão"
     >
       <ServicesHeader onNewService={handleNewService} />
-      <ServicesTable 
-        key={refreshKey}
-        onEdit={handleEditService} 
-        onDataChange={handleSuccess}
-      />
+      <ServicesTable onEdit={handleEditService} />
       <ServiceDialog
         open={dialogOpen}
         onOpenChange={handleCloseDialog}
         service={selectedService}
-        onSuccess={handleSuccess}
       />
     </AppLayout>
   );
