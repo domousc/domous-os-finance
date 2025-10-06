@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/contexts/RoleContext";
@@ -6,7 +6,7 @@ import { SuperAdminLayout } from "@/components/superadmin/SuperAdminLayout";
 import { PlansHeader } from "@/components/superadmin/plans/PlansHeader";
 import { PlansTable } from "@/components/superadmin/plans/PlansTable";
 import { PlanDialog } from "@/components/superadmin/plans/PlanDialog";
-import { useEffect } from "react";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const Plans = () => {
   const navigate = useNavigate();
@@ -26,13 +26,7 @@ const Plans = () => {
   }, [user, isSuperAdmin, authLoading, roleLoading, navigate]);
 
   if (authLoading || roleLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="animate-pulse-slow text-primary text-2xl font-bold">
-          Carregando...
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Carregando planos" />;
   }
 
   if (!isSuperAdmin) {

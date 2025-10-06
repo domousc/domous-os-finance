@@ -6,6 +6,7 @@ import { SuperAdminLayout } from "@/components/superadmin/SuperAdminLayout";
 import { SubscriptionsHeader } from "@/components/superadmin/subscriptions/SubscriptionsHeader";
 import { SubscriptionsTable } from "@/components/superadmin/subscriptions/SubscriptionsTable";
 import { SubscriptionDialog } from "@/components/superadmin/subscriptions/SubscriptionDialog";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const Subscriptions = () => {
   const navigate = useNavigate();
@@ -25,13 +26,7 @@ const Subscriptions = () => {
   }, [user, isSuperAdmin, authLoading, roleLoading, navigate]);
 
   if (authLoading || roleLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="animate-pulse text-primary text-2xl font-bold">
-          Carregando...
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Carregando assinaturas" />;
   }
 
   if (!isSuperAdmin) {

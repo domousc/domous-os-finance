@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/contexts/RoleContext";
 import { SuperAdminLayout } from "@/components/superadmin/SuperAdminLayout";
 import { DashboardStats } from "@/components/superadmin/DashboardStats";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const SuperAdmin = () => {
   const navigate = useNavigate();
@@ -21,13 +22,7 @@ const SuperAdmin = () => {
   }, [user, isSuperAdmin, authLoading, roleLoading, navigate]);
 
   if (authLoading || roleLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="animate-pulse-slow text-primary text-2xl font-bold">
-          Carregando...
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Carregando dashboard" />;
   }
 
   if (!isSuperAdmin) {

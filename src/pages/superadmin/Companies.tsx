@@ -6,6 +6,7 @@ import { SuperAdminLayout } from "@/components/superadmin/SuperAdminLayout";
 import { CompaniesHeader } from "@/components/superadmin/companies/CompaniesHeader";
 import { CompaniesTable } from "@/components/superadmin/companies/CompaniesTable";
 import { CompanyDialog } from "@/components/superadmin/companies/CompanyDialog";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const Companies = () => {
   const navigate = useNavigate();
@@ -25,13 +26,7 @@ const Companies = () => {
   }, [user, isSuperAdmin, authLoading, roleLoading, navigate]);
 
   if (authLoading || roleLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="animate-pulse text-primary text-2xl font-bold">
-          Carregando...
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Carregando empresas" />;
   }
 
   if (!isSuperAdmin) {
