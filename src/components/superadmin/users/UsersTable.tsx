@@ -152,39 +152,46 @@ export const UsersTable = ({ onEditUser }: UsersTableProps) => {
   }, []);
 
   const handleDelete = async (id: string) => {
-    // Primeiro deletar os roles do usuário
-    const { error: rolesError } = await supabase
-      .from("user_roles")
-      .delete()
-      .eq("user_id", id);
-
-    if (rolesError) {
-      toast({
-        title: "Erro ao excluir roles do usuário",
-        description: rolesError.message,
-        variant: "destructive",
+    try {
+      // Chamar edge function que deleta o usuário do auth.users também
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId: id }
       });
-      return;
-    }
 
-    // Depois deletar o perfil (o auth.user será deletado em cascata)
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .delete()
-      .eq("id", id);
+      if (error) {
+        console.error('Error calling delete-user function:', error);
+        toast({
+          title: "Erro ao excluir usuário",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
 
-    if (profileError) {
+      if (data?.error) {
+        toast({
+          title: "Erro ao excluir usuário",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Usuário excluído com sucesso",
+        description: "O usuário foi removido completamente do sistema",
+      });
+
+      // Atualizar lista de usuários
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
       toast({
         title: "Erro ao excluir usuário",
-        description: profileError.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Usuário excluído com sucesso",
-    });
   };
 
   if (loading) {
