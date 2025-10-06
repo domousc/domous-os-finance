@@ -1,6 +1,7 @@
-import { useTheme } from "@/components/ThemeProvider";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Moon, Sun } from "lucide-react";
-import authHero from "@/assets/auth-hero.jpg";
+import authHero from "@/assets/images/auth-hero.jpg";
+import { AnimatedParticles } from "./AnimatedParticles";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -13,42 +14,80 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
 
   return (
     <div className="min-h-screen w-full flex">
-      {/* Left Side - Hero Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary to-primary/80">
+      {/* Left Side - Hero Image with Animations */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/70 animate-gradient">
+        {/* Animated Background Image */}
         <div className="absolute inset-0">
           <img
             src={authHero}
             alt="Domous OS"
-            className="w-full h-full object-cover opacity-20"
+            className="w-full h-full object-cover opacity-20 scale-105 animate-slow-zoom"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/50 to-primary/30" />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-primary/40 to-transparent animate-gradient-shift" />
         </div>
+
+        {/* Floating Particles */}
+        <AnimatedParticles />
+
+        {/* Animated Glow Effect */}
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/30 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
         
-        <div className="relative z-10 flex flex-col justify-center px-12 lg:px-16 xl:px-24 text-white animate-slide-in-left">
-          <div className="mb-8">
-            <h1 className="text-5xl xl:text-6xl font-bold mb-4 tracking-tight">
-              Domous OS
+        <div className="relative z-10 flex flex-col justify-center px-12 lg:px-16 xl:px-24 text-white">
+          {/* Logo and Title with Stagger Animation */}
+          <div className="mb-8 space-y-4">
+            <h1 className="text-5xl xl:text-6xl font-bold tracking-tight animate-slide-in-left">
+              <span className="inline-block hover:scale-110 transition-transform duration-300 cursor-default">
+                Domous
+              </span>{" "}
+              <span className="inline-block hover:scale-110 transition-transform duration-300 cursor-default text-white/90">
+                OS
+              </span>
             </h1>
-            <div className="w-20 h-1 bg-white/80 rounded-full" />
+            <div className="w-20 h-1 bg-white/80 rounded-full animate-expand" />
           </div>
           
-          <p className="text-xl xl:text-2xl font-light leading-relaxed max-w-lg">
-            Transforme a gestão financeira da sua empresa com inteligência e simplicidade.
+          {/* Main Tagline */}
+          <p className="text-xl xl:text-2xl font-light leading-relaxed max-w-lg mb-12 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            Transforme a gestão financeira da sua empresa com{" "}
+            <span className="font-semibold text-white inline-block hover:scale-105 transition-transform">
+              inteligência
+            </span>{" "}
+            e{" "}
+            <span className="font-semibold text-white inline-block hover:scale-105 transition-transform">
+              simplicidade
+            </span>.
           </p>
           
-          <div className="mt-12 space-y-4 text-white/80">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse-slow" />
-              <p className="text-lg">Controle total em tempo real</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse-slow" />
-              <p className="text-lg">Multi-tenant e escalável</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse-slow" />
-              <p className="text-lg">Segurança de nível empresarial</p>
-            </div>
+          {/* Feature List with Staggered Animation */}
+          <div className="space-y-4">
+            {[
+              { text: "Controle total em tempo real", delay: "0.3s" },
+              { text: "Multi-tenant e escalável", delay: "0.4s" },
+              { text: "Segurança de nível empresarial", delay: "0.5s" },
+            ].map((item, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3 group cursor-default animate-fade-in-up"
+                style={{ animationDelay: item.delay }}
+              >
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse-slow group-hover:scale-150 transition-transform duration-300" />
+                <p className="text-lg text-white/90 group-hover:text-white group-hover:translate-x-2 transition-all duration-300">
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Decorative Elements */}
+          <div className="mt-16 flex gap-3 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="w-12 h-1 bg-white/30 rounded-full hover:bg-white/60 transition-all duration-500 hover:w-20"
+                style={{ animationDelay: `${0.7 + i * 0.1}s` }}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -58,25 +97,29 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
         {/* Theme Toggle */}
         <button
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          className="absolute top-6 right-6 p-3 rounded-full glass-effect hover:bg-primary/10 transition-all duration-300 group"
+          className="absolute top-6 right-6 p-3 rounded-full glass-effect hover:bg-primary/10 transition-all duration-300 group hover:scale-110"
           aria-label="Toggle theme"
         >
           {theme === "light" ? (
-            <Moon className="w-5 h-5 text-foreground group-hover:text-primary transition-colors" />
+            <Moon className="w-5 h-5 text-foreground group-hover:text-primary transition-colors group-hover:rotate-12" />
           ) : (
-            <Sun className="w-5 h-5 text-foreground group-hover:text-primary transition-colors" />
+            <Sun className="w-5 h-5 text-foreground group-hover:text-primary transition-colors group-hover:rotate-12" />
           )}
         </button>
 
         {/* Mobile Logo */}
-        <div className="lg:hidden absolute top-6 left-6">
+        <div className="lg:hidden absolute top-6 left-6 animate-fade-in">
           <h2 className="text-2xl font-bold text-primary">Domous OS</h2>
         </div>
 
         <div className="w-full max-w-md animate-fade-in">
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-2">{title}</h2>
-            <p className="text-muted-foreground">{subtitle}</p>
+            <h2 className="text-3xl font-bold text-foreground mb-2 animate-slide-in-right">
+              {title}
+            </h2>
+            <p className="text-muted-foreground animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              {subtitle}
+            </p>
           </div>
 
           {children}
