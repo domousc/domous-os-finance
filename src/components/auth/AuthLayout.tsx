@@ -2,6 +2,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Moon, Sun } from "lucide-react";
 import authHero from "@/assets/images/auth-hero.jpg";
 import { AnimatedParticles } from "./AnimatedParticles";
+import { FloatingIcons } from "./FloatingIcons";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -21,17 +22,21 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
           <img
             src={authHero}
             alt="Domous OS"
-            className="w-full h-full object-cover opacity-20 scale-105 animate-slow-zoom"
+            className="w-full h-full object-cover opacity-30 scale-105 animate-slow-zoom"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-primary/40 to-transparent animate-gradient-shift" />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-primary/50 to-black/60 animate-gradient-shift" />
         </div>
+
+        {/* Floating Financial Icons */}
+        <FloatingIcons />
 
         {/* Floating Particles */}
         <AnimatedParticles />
 
-        {/* Animated Glow Effect */}
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/30 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
+        {/* Animated Glow Effects */}
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse-glow" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/15 rounded-full blur-2xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
         
         <div className="relative z-10 flex flex-col justify-center px-12 lg:px-16 xl:px-24 text-white">
           {/* Logo and Title with Stagger Animation */}
