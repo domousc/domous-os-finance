@@ -189,50 +189,34 @@ export const UserDialog = ({ open, onClose, userId }: UserDialogProps) => {
           title: "Usuário atualizado com sucesso",
         });
       } else {
-        // Criar novo usuário via Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password || Math.random().toString(36).slice(-8),
-          options: {
-            data: {
+        // Criar novo usuário via Edge Function (mantém sessão do superadmin)
+        const { data, error: functionError } = await supabase.functions.invoke(
+          'admin-create-user',
+          {
+            body: {
+              email: values.email,
+              password: values.password,
               full_name: values.full_name,
+              phone: values.phone,
               company_id: values.company_id,
+              avatar_url: values.avatar_url,
+              roles: values.roles,
             },
-          },
-        });
+          }
+        );
 
-        if (authError) throw authError;
-        if (!authData.user) throw new Error("Erro ao criar usuário");
-
-        // Atualizar perfil adicional
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({
-            phone: values.phone || null,
-            avatar_url: values.avatar_url || null,
-          })
-          .eq("id", authData.user.id);
-
-        if (profileError) {
-          console.error("Erro ao atualizar perfil:", profileError);
+        if (functionError) {
+          console.error('Function error:', functionError);
+          throw new Error(functionError.message || 'Erro ao criar usuário');
         }
 
-        // Inserir roles
-        const rolesData = values.roles.map((role) => ({
-          user_id: authData.user!.id,
-          role: role as UserRole,
-          company_id: values.company_id,
-        }));
-
-        const { error: rolesError } = await supabase
-          .from("user_roles")
-          .insert(rolesData);
-
-        if (rolesError) throw rolesError;
+        if (!data?.success) {
+          throw new Error(data?.error || 'Erro ao criar usuário');
+        }
 
         toast({
           title: "Usuário criado com sucesso",
-          description: "Um email de confirmação foi enviado para o usuário.",
+          description: "O usuário foi adicionado ao sistema.",
         });
       }
 
