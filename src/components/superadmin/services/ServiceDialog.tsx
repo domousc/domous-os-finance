@@ -262,14 +262,16 @@ export const ServiceDialog = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Empresa</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value || undefined}
+                    >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
+                          <SelectValue placeholder="Todas as empresas" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Todas</SelectItem>
                         {companies.map((company) => (
                           <SelectItem key={company.id} value={company.id}>
                             {company.name}
