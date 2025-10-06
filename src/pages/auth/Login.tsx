@@ -42,7 +42,6 @@ const Login = () => {
         title: "Login realizado!",
         description: "Redirecionando...",
       });
-      navigate("/dashboard");
     }
   };
 

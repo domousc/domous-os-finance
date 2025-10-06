@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/contexts/RoleContext";
@@ -9,18 +9,21 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, signOut, loading: authLoading } = useAuth();
   const { isSuperAdmin, loading: roleLoading } = useRole();
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/login");
+    if (hasNavigated.current) return;
+    
+    if (!authLoading && !roleLoading) {
+      if (!user) {
+        hasNavigated.current = true;
+        navigate("/login");
+      } else if (isSuperAdmin) {
+        hasNavigated.current = true;
+        navigate("/superadmin");
+      }
     }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!authLoading && !roleLoading && isSuperAdmin) {
-      navigate("/superadmin");
-    }
-  }, [authLoading, roleLoading, isSuperAdmin, navigate]);
+  }, [user, authLoading, roleLoading, isSuperAdmin, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
