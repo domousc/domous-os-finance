@@ -35,8 +35,8 @@ export default function SubscriptionExpired() {
     }
   }, [loading, status, navigate]);
 
-  // Loading state
-  if (roleLoading) {
+  // Loading state - aguarda tanto role quanto subscription carregarem
+  if (roleLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
