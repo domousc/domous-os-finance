@@ -3,7 +3,18 @@ import { AppLayout } from "@/components/shared/AppLayout";
 import { ServicesHeader } from "@/components/superadmin/services/ServicesHeader";
 import { ServicesTable } from "@/components/superadmin/services/ServicesTable";
 import { ServiceDialog } from "@/components/superadmin/services/ServiceDialog";
-import { Briefcase } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  DollarSign,
+  UserCheck,
+  FileBarChart,
+  UsersRound,
+  Settings,
+  UserPlus,
+  UserCircle,
+  Briefcase,
+} from "lucide-react";
 import type { MenuItem } from "@/components/shared/AppLayout";
 
 interface Service {
@@ -21,7 +32,58 @@ interface Service {
 }
 
 const menuItems: MenuItem[] = [
-  { icon: Briefcase, label: "Serviços", path: "/dashboard/services" },
+  {
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    path: "/dashboard",
+  },
+  {
+    icon: Users,
+    label: "Clientes",
+    path: "/dashboard/clients",
+  },
+  {
+    icon: Briefcase,
+    label: "Serviços",
+    path: "/dashboard/services",
+  },
+  {
+    icon: DollarSign,
+    label: "Financeiro",
+    path: "/dashboard/financial",
+  },
+  {
+    icon: UserCheck,
+    label: "Controle Pessoal",
+    path: "/dashboard/personal",
+  },
+  {
+    icon: FileBarChart,
+    label: "Relatórios Gerais",
+    path: "/dashboard/reports",
+  },
+  {
+    icon: UsersRound,
+    label: "Times",
+    path: "/dashboard/teams",
+  },
+  {
+    icon: Settings,
+    label: "Configurações",
+    path: "/dashboard/settings",
+    submenu: [
+      {
+        icon: UserPlus,
+        label: "Cadastro de Usuários",
+        path: "/dashboard/settings/users",
+      },
+      {
+        icon: UserCircle,
+        label: "Perfil",
+        path: "/dashboard/settings/profile",
+      },
+    ],
+  },
 ];
 
 const Services = () => {
