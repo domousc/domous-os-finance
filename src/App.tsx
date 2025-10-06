@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { RoleProvider } from "@/contexts/RoleContext";
 import Index from "./pages/Index";
 import SuperAdmin from "./pages/superadmin/SuperAdmin";
+import Plans from "./pages/superadmin/Plans";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -30,7 +31,8 @@ const App = () => (
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/dashboard" element={<Index />} />
-                <Route path="/superadmin/*" element={<SuperAdmin />} />
+                <Route path="/superadmin" element={<SuperAdmin />} />
+                <Route path="/superadmin/plans" element={<Plans />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

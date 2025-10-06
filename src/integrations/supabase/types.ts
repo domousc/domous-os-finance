@@ -67,6 +67,7 @@ export type Database = {
       }
       plans: {
         Row: {
+          billing_period: Database["public"]["Enums"]["billing_period"]
           created_at: string
           description: string | null
           features: Json | null
@@ -79,6 +80,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          billing_period?: Database["public"]["Enums"]["billing_period"]
           created_at?: string
           description?: string | null
           features?: Json | null
@@ -91,6 +93,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          billing_period?: Database["public"]["Enums"]["billing_period"]
           created_at?: string
           description?: string | null
           features?: Json | null
@@ -277,6 +280,7 @@ export type Database = {
     }
     Enums: {
       app_role: "superadmin" | "admin" | "gestor" | "financeiro" | "operador"
+      billing_period: "monthly" | "semiannual" | "annual"
       plan_status: "active" | "inactive"
       subscription_status:
         | "active"
@@ -412,6 +416,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["superadmin", "admin", "gestor", "financeiro", "operador"],
+      billing_period: ["monthly", "semiannual", "annual"],
       plan_status: ["active", "inactive"],
       subscription_status: [
         "active",
