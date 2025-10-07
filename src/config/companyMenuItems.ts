@@ -20,7 +20,7 @@ export const companyMenuItems: MenuItem[] = [
   {
     icon: DollarSign,
     label: "Financeiro",
-    path: "/dashboard/invoices",
+    path: "/dashboard/invoices/receivable",
     submenu: [
       {
         icon: TrendingUp,
