@@ -162,9 +162,10 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
           const currentDueDate = new Date(firstDueDate);
           currentDueDate.setMonth(currentDueDate.getMonth() + i);
 
-            // Determinar status inicial baseado no tipo e método de pagamento
-            const shouldBePaid = data.type === "subscription" || 
-                                 data.payment_method === "Cartão de Crédito";
+            // Determinar status inicial baseado na data, tipo e método de pagamento
+            const isPastDue = currentDueDate <= new Date();
+            const shouldBePaid = isPastDue && (data.type === "subscription" || 
+                                               data.payment_method === "Cartão de Crédito");
             
             expensesToCreate.push({
               company_id: profile.company_id,
