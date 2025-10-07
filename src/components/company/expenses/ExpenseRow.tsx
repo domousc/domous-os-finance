@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, CheckCircle, Edit, Trash2, XCircle } from "lucide-react";
+import { MoreHorizontal, CheckCircle, Edit, Trash2, XCircle, X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -107,6 +107,27 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
     },
   });
 
+  const markAsPending = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("company_expenses")
+        .update({ status: "pending", paid_date: null })
+        .eq("id", expense.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["company-expenses"] });
+      toast({ title: "Despesa voltou para pendente" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao atualizar",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <TableRow>
       <TableCell>
@@ -162,6 +183,12 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
               <DropdownMenuItem onClick={() => markAsPaid.mutate()}>
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Marcar como Pago
+              </DropdownMenuItem>
+            )}
+            {expense.status === "paid" && (
+              <DropdownMenuItem onClick={() => markAsPending.mutate()}>
+                <X className="mr-2 h-4 w-4" />
+                Voltar para Pendente
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => onEdit(expense)}>

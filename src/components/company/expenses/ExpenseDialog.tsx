@@ -162,22 +162,27 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
           const currentDueDate = new Date(firstDueDate);
           currentDueDate.setMonth(currentDueDate.getMonth() + i);
 
-          expensesToCreate.push({
-            company_id: profile.company_id,
-            type: data.type,
-            category: data.category || null,
-            description: installments > 1 ? `${data.description} (${i + 1}/${installments})` : data.description,
-            amount: installmentAmount,
-            total_amount: totalAmount,
-            billing_cycle: data.billing_cycle,
-            due_date: currentDueDate.toISOString(),
-            payment_method: data.payment_method || null,
-            notes: data.notes || null,
-            status: "pending" as const,
-            installment_group_id: installmentGroupId,
-            total_installments: installments,
-            current_installment: i + 1,
-          });
+            // Determinar status inicial baseado no tipo e método de pagamento
+            const shouldBePaid = data.type === "subscription" || 
+                                 data.payment_method === "Cartão de Crédito";
+            
+            expensesToCreate.push({
+              company_id: profile.company_id,
+              type: data.type,
+              category: data.category || null,
+              description: installments > 1 ? `${data.description} (${i + 1}/${installments})` : data.description,
+              amount: installmentAmount,
+              total_amount: totalAmount,
+              billing_cycle: data.billing_cycle,
+              due_date: currentDueDate.toISOString(),
+              payment_method: data.payment_method || null,
+              notes: data.notes || null,
+              status: shouldBePaid ? "paid" : "pending",
+              paid_date: shouldBePaid ? new Date().toISOString() : null,
+              installment_group_id: installmentGroupId,
+              total_installments: installments,
+              current_installment: i + 1,
+            });
         }
 
         const { error } = await supabase
@@ -415,9 +420,21 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Método de Pagamento (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Cartão de Crédito, PIX" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o método" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
+                      <SelectItem value="Cartão de Débito">Cartão de Débito</SelectItem>
+                      <SelectItem value="Boleto">Boleto</SelectItem>
+                      <SelectItem value="PIX">PIX</SelectItem>
+                      <SelectItem value="Dinheiro">Dinheiro</SelectItem>
+                      <SelectItem value="Outros">Outros</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

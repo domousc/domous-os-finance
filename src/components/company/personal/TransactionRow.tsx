@@ -71,6 +71,21 @@ export const TransactionRow = ({ transaction, onEdit }: TransactionRowProps) => 
     },
   });
 
+  const markAsPendingMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("personal_transactions")
+        .update({ status: "pending", paid_date: null })
+        .eq("id", transaction.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["personal-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["personal-finance-stats"] });
+      toast({ title: "Transação voltou para pendente" });
+    },
+  });
+
   return (
     <>
       <TableRow>
@@ -105,6 +120,12 @@ export const TransactionRow = ({ transaction, onEdit }: TransactionRowProps) => 
                 <DropdownMenuItem onClick={() => markAsPaidMutation.mutate()}>
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Marcar como Pago
+                </DropdownMenuItem>
+              )}
+              {transaction.status === "paid" && (
+                <DropdownMenuItem onClick={() => markAsPendingMutation.mutate()}>
+                  <X className="mr-2 h-4 w-4" />
+                  Voltar para Pendente
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={() => onEdit(transaction)}>
