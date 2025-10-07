@@ -8,9 +8,13 @@ import { ClientDialog } from "@/components/company/clients/ClientDialog";
 interface Client {
   id: string;
   name: string;
+  company_name: string | null;
+  responsible_name: string | null;
   email: string | null;
   phone: string | null;
   document: string | null;
+  cpf: string | null;
+  cnpj: string | null;
   address: string | null;
   city: string | null;
   state: string | null;

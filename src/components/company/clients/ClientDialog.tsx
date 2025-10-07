@@ -32,9 +32,12 @@ import {
 
 const clientSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
+  company_name: z.string().optional(),
+  responsible_name: z.string().optional(),
   email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   phone: z.string().optional(),
-  document: z.string().optional(),
+  cpf: z.string().optional(),
+  cnpj: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -48,9 +51,13 @@ type ClientFormData = z.infer<typeof clientSchema>;
 interface Client {
   id: string;
   name: string;
+  company_name: string | null;
+  responsible_name: string | null;
   email: string | null;
   phone: string | null;
   document: string | null;
+  cpf: string | null;
+  cnpj: string | null;
   address: string | null;
   city: string | null;
   state: string | null;
@@ -73,9 +80,12 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
     resolver: zodResolver(clientSchema),
     defaultValues: {
       name: "",
+      company_name: "",
+      responsible_name: "",
       email: "",
       phone: "",
-      document: "",
+      cpf: "",
+      cnpj: "",
       address: "",
       city: "",
       state: "",
@@ -89,9 +99,12 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
     if (client) {
       form.reset({
         name: client.name,
+        company_name: client.company_name || "",
+        responsible_name: client.responsible_name || "",
         email: client.email || "",
         phone: client.phone || "",
-        document: client.document || "",
+        cpf: client.cpf || "",
+        cnpj: client.cnpj || "",
         address: client.address || "",
         city: client.city || "",
         state: client.state || "",
@@ -102,9 +115,12 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
     } else {
       form.reset({
         name: "",
+        company_name: "",
+        responsible_name: "",
         email: "",
         phone: "",
-        document: "",
+        cpf: "",
+        cnpj: "",
         address: "",
         city: "",
         state: "",
@@ -129,10 +145,13 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
 
       const clientData = {
         name: data.name,
+        company_name: data.company_name || null,
+        responsible_name: data.responsible_name || null,
         status: data.status,
         email: data.email || null,
         phone: data.phone || null,
-        document: data.document || null,
+        cpf: data.cpf || null,
+        cnpj: data.cnpj || null,
         address: data.address || null,
         city: data.city || null,
         state: data.state || null,
@@ -184,14 +203,44 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="responsible_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do Responsável</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="company_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome da Empresa</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome *</FormLabel>
+                  <FormLabel>Nome (Identificação) *</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="Como deseja identificar este cliente" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -228,19 +277,35 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="document"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CPF/CNPJ</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="cpf"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CPF</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="000.000.000-00" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="cnpj"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CNPJ</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="00.000.000/0000-00" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}

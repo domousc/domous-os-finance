@@ -82,7 +82,10 @@ export type Database = {
         Row: {
           address: string | null
           city: string | null
+          cnpj: string | null
           company_id: string
+          company_name: string | null
+          cpf: string | null
           created_at: string
           document: string | null
           email: string | null
@@ -90,6 +93,7 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          responsible_name: string | null
           state: string | null
           status: string
           updated_at: string
@@ -98,7 +102,10 @@ export type Database = {
         Insert: {
           address?: string | null
           city?: string | null
+          cnpj?: string | null
           company_id: string
+          company_name?: string | null
+          cpf?: string | null
           created_at?: string
           document?: string | null
           email?: string | null
@@ -106,6 +113,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          responsible_name?: string | null
           state?: string | null
           status?: string
           updated_at?: string
@@ -114,7 +122,10 @@ export type Database = {
         Update: {
           address?: string | null
           city?: string | null
+          cnpj?: string | null
           company_id?: string
+          company_name?: string | null
+          cpf?: string | null
           created_at?: string
           document?: string | null
           email?: string | null
@@ -122,6 +133,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          responsible_name?: string | null
           state?: string | null
           status?: string
           updated_at?: string
