@@ -24,16 +24,24 @@ export const ExpensesStats = () => {
     ?.filter((e) => e.status === "overdue")
     .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
+  // Recorrência Mensal - soma o valor mensal de todas as despesas recorrentes mensais ativas
   const monthlyRecurring = expenses
     ?.filter((e) => e.billing_cycle === "monthly" && e.status !== "paid")
     .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
+  // Assinaturas Ativas - total de todas as despesas recorrentes (mensal ou anual) que estão ativas
+  const activeSubscriptions = expenses
+    ?.filter((e) => e.billing_cycle !== "one_time" && e.status !== "paid" && e.status !== "cancelled")
+    .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+
+  // Próximos 30 dias - despesas pendentes que vencem nos próximos 30 dias
   const next30Days = expenses
     ?.filter((e) => {
       const dueDate = new Date(e.due_date);
       const today = new Date();
-      const thirtyDaysFromNow = new Date(today.setDate(today.getDate() + 30));
-      return dueDate <= thirtyDaysFromNow && e.status === "pending";
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(today.getDate() + 30);
+      return dueDate >= today && dueDate <= thirtyDaysFromNow && (e.status === "pending" || e.status === "overdue");
     })
     .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
@@ -51,16 +59,16 @@ export const ExpensesStats = () => {
       color: "text-red-600",
     },
     {
-      title: "Recorrente Mensal",
+      title: "Recorrência Mensal",
       value: monthlyRecurring,
       icon: TrendingUp,
       color: "text-purple-600",
     },
     {
-      title: "Próximos 30 Dias",
-      value: next30Days,
-      icon: Calendar,
-      color: "text-orange-600",
+      title: "Assinaturas Ativas",
+      value: activeSubscriptions,
+      icon: TrendingUp,
+      color: "text-green-600",
     },
   ];
 
