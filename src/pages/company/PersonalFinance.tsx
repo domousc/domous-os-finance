@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { AppLayout } from "@/components/shared/AppLayout";
+import { companyMenuItems } from "@/config/companyMenuItems";
 import { PersonalFinanceHeader } from "@/components/company/personal/PersonalFinanceHeader";
 import { PersonalFinanceStats } from "@/components/company/personal/PersonalFinanceStats";
 import { PersonalTransactionsTable } from "@/components/company/personal/PersonalTransactionsTable";
@@ -30,12 +32,18 @@ const PersonalFinance = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <PersonalFinanceHeader onAddTransaction={() => setDialogOpen(true)} />
-      <PersonalFinanceStats />
-      <PersonalTransactionsTable />
-      <TransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-    </div>
+    <AppLayout
+      menuItems={companyMenuItems}
+      headerTitle="Domous OS"
+      headerBadge="Controle Pessoal"
+    >
+      <div className="space-y-6">
+        <PersonalFinanceHeader onAddTransaction={() => setDialogOpen(true)} />
+        <PersonalFinanceStats />
+        <PersonalTransactionsTable />
+        <TransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      </div>
+    </AppLayout>
   );
 };
 
