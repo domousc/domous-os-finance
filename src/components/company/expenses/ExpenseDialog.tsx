@@ -6,6 +6,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -38,7 +47,9 @@ const expenseSchema = z.object({
   description: z.string().min(1, "Descrição é obrigatória"),
   amount: z.string().min(1, "Valor é obrigatório"),
   billing_cycle: z.enum(["monthly", "annual", "one_time"]),
-  due_date: z.string().min(1, "Data de vencimento é obrigatória"),
+  due_date: z.date({
+    required_error: "Data de vencimento é obrigatória",
+  }),
   payment_method: z.string().optional(),
   notes: z.string().optional(),
   is_installment: z.boolean().optional(),
@@ -67,7 +78,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
       category: "",
       description: "",
       amount: "",
-      due_date: "",
+      due_date: new Date(),
       payment_method: "",
       notes: "",
       is_installment: false,
@@ -84,7 +95,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
         description: expense.description,
         amount: expense.total_installments > 1 ? expense.total_amount.toString() : expense.amount.toString(),
         billing_cycle: expense.billing_cycle,
-        due_date: new Date(expense.due_date).toISOString().split("T")[0],
+        due_date: new Date(expense.due_date),
         payment_method: expense.payment_method || "",
         notes: expense.notes || "",
         is_installment: expense.total_installments > 1,
@@ -98,7 +109,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
         category: "",
         description: "",
         amount: "",
-        due_date: "",
+        due_date: new Date(),
         payment_method: "",
         notes: "",
         is_installment: false,
@@ -130,7 +141,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
           description: data.description,
           amount: parseFloat(data.amount),
           billing_cycle: data.billing_cycle,
-          due_date: new Date(data.due_date).toISOString(),
+          due_date: data.due_date.toISOString(),
           payment_method: data.payment_method || null,
           notes: data.notes || null,
         };
@@ -143,7 +154,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
       } else {
         // Criar nova despesa
         const installmentGroupId = installments > 1 ? crypto.randomUUID() : null;
-        const firstDueDate = new Date(data.due_date);
+        const firstDueDate = data.due_date;
 
         const expensesToCreate = [];
         
@@ -308,11 +319,37 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
                 control={form.control}
                 name="due_date"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Data de Vencimento</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Selecione a data</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
