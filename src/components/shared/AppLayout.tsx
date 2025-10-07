@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { LucideIcon } from "lucide-react";
 import { AppHeader } from "./AppHeader";
 import { AppFooter } from "./AppFooter";
-import { BottomNav } from "./BottomNav";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -99,7 +98,7 @@ export const AppLayout = ({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <AppHeader title={headerTitle} badge={headerBadge} />
+      <AppHeader title={headerTitle} badge={headerBadge} menuItems={menuItems} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Desktop Only */}
@@ -118,12 +117,9 @@ export const AppLayout = ({
         </aside>
 
         <main className="flex-1 overflow-y-auto bg-background">
-          <div className="container mx-auto p-6 pb-20 md:pb-6">{children}</div>
+          <div className="container mx-auto p-6">{children}</div>
         </main>
       </div>
-
-      {/* Bottom Navigation - Mobile Only */}
-      <BottomNav menuItems={menuItems} />
 
       <AppFooter className="hidden md:block" />
     </div>

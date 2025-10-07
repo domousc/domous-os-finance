@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { MobileMenu } from "./MobileMenu";
+import { MenuItem } from "./AppLayout";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,9 +24,10 @@ import { Badge } from "@/components/ui/badge";
 type AppHeaderProps = {
   title: string;
   badge?: string;
+  menuItems?: MenuItem[];
 };
 
-export const AppHeader = ({ title, badge }: AppHeaderProps) => {
+export const AppHeader = ({ title, badge, menuItems = [] }: AppHeaderProps) => {
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -43,6 +46,9 @@ export const AppHeader = ({ title, badge }: AppHeaderProps) => {
     <header className="border-b border-border bg-card sticky top-0 z-10">
       <div className="flex items-center justify-between h-16 px-6">
         <div className="flex items-center gap-3">
+          {/* Mobile Menu */}
+          <MobileMenu menuItems={menuItems} />
+          
           <h1 className="text-2xl font-bold">{title}</h1>
           {badge && (
             <Badge variant="secondary" className="font-normal">
