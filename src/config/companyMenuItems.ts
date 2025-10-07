@@ -25,8 +25,13 @@ export const companyMenuItems: MenuItem[] = [
   {
     icon: DollarSign,
     label: "Financeiro",
-    path: "/dashboard/invoices/receivable",
+    path: "/dashboard/finance/overview",
     submenu: [
+      {
+        icon: LayoutDashboard,
+        label: "Visão Geral",
+        path: "/dashboard/finance/overview",
+      },
       {
         icon: TrendingUp,
         label: "A Receber",
@@ -36,6 +41,11 @@ export const companyMenuItems: MenuItem[] = [
         icon: TrendingDown,
         label: "A Pagar",
         path: "/dashboard/invoices/payable",
+      },
+      {
+        icon: Package,
+        label: "Despesas Operacionais",
+        path: "/dashboard/finance/expenses",
       },
     ],
   },

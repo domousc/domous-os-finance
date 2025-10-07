@@ -27,6 +27,8 @@ import Invoices from "./pages/company/Invoices";
 import Receivable from "./pages/company/invoices/Receivable";
 import Payable from "./pages/company/invoices/Payable";
 import PersonalFinance from "./pages/company/PersonalFinance";
+import FinanceOverview from "./pages/company/FinanceOverview";
+import Expenses from "./pages/company/Expenses";
 import Dashboard from "./pages/company/Dashboard";
 import SubscriptionExpired from "./pages/company/SubscriptionExpired";
 import Login from "./pages/auth/Login";
@@ -149,26 +151,46 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/dashboard/invoices/receivable"
-              element={
-                <ProtectedRoute>
-                  <CompanyRoute>
-                    <Receivable />
-                  </CompanyRoute>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/invoices/payable"
-              element={
-                <ProtectedRoute>
-                  <CompanyRoute>
-                    <Payable />
-                  </CompanyRoute>
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/dashboard/finance/overview"
+                element={
+                  <ProtectedRoute>
+                    <CompanyRoute>
+                      <FinanceOverview />
+                    </CompanyRoute>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/invoices/receivable"
+                element={
+                  <ProtectedRoute>
+                    <CompanyRoute>
+                      <Receivable />
+                    </CompanyRoute>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/invoices/payable"
+                element={
+                  <ProtectedRoute>
+                    <CompanyRoute>
+                      <Payable />
+                    </CompanyRoute>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/finance/expenses"
+                element={
+                  <ProtectedRoute>
+                    <CompanyRoute>
+                      <Expenses />
+                    </CompanyRoute>
+                  </ProtectedRoute>
+                }
+              />
             <Route
               path="/dashboard/personal-finance"
               element={

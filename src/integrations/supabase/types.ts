@@ -242,6 +242,57 @@ export type Database = {
         }
         Relationships: []
       }
+      company_expenses: {
+        Row: {
+          amount: number
+          billing_cycle: Database["public"]["Enums"]["expense_billing_cycle"]
+          category: string | null
+          company_id: string
+          created_at: string
+          description: string
+          due_date: string
+          id: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          type: Database["public"]["Enums"]["expense_type"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          billing_cycle?: Database["public"]["Enums"]["expense_billing_cycle"]
+          category?: string | null
+          company_id: string
+          created_at?: string
+          description: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          type: Database["public"]["Enums"]["expense_type"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          billing_cycle?: Database["public"]["Enums"]["expense_billing_cycle"]
+          category?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          type?: Database["public"]["Enums"]["expense_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
@@ -874,6 +925,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_overdue_expenses: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_overdue_invoices: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -886,6 +941,14 @@ export type Database = {
     Enums: {
       app_role: "superadmin" | "admin" | "gestor" | "financeiro" | "operador"
       billing_period: "monthly" | "semiannual" | "annual"
+      expense_billing_cycle: "monthly" | "annual" | "one_time"
+      expense_type:
+        | "subscription"
+        | "service"
+        | "infrastructure"
+        | "marketing"
+        | "team"
+        | "one_time"
       invoice_status: "pending" | "paid" | "canceled" | "overdue"
       plan_status: "active" | "inactive"
       service_status: "active" | "inactive" | "archived"
@@ -1027,6 +1090,15 @@ export const Constants = {
     Enums: {
       app_role: ["superadmin", "admin", "gestor", "financeiro", "operador"],
       billing_period: ["monthly", "semiannual", "annual"],
+      expense_billing_cycle: ["monthly", "annual", "one_time"],
+      expense_type: [
+        "subscription",
+        "service",
+        "infrastructure",
+        "marketing",
+        "team",
+        "one_time",
+      ],
       invoice_status: ["pending", "paid", "canceled", "overdue"],
       plan_status: ["active", "inactive"],
       service_status: ["active", "inactive", "archived"],
