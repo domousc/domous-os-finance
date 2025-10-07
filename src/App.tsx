@@ -19,6 +19,9 @@ import Users from "./pages/superadmin/Users";
 import Reports from "./pages/superadmin/Reports";
 import Settings from "./pages/superadmin/Settings";
 import CompanyServices from "./pages/company/Services";
+import Clients from "./pages/company/Clients";
+import ClientProfile from "./pages/company/ClientProfile";
+import Invoices from "./pages/company/Invoices";
 import Dashboard from "./pages/company/Dashboard";
 import SubscriptionExpired from "./pages/company/SubscriptionExpired";
 import Login from "./pages/auth/Login";
@@ -87,6 +90,36 @@ const App = () => (
                 <ProtectedRoute>
                   <CompanyRoute>
                     <CompanyServices />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/clients"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <Clients />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/clients/:id"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <ClientProfile />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/invoices"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <Invoices />
                   </CompanyRoute>
                 </ProtectedRoute>
               }
