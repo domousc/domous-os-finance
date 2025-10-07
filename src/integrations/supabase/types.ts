@@ -325,6 +325,235 @@ export type Database = {
           },
         ]
       }
+      partner_client_agreements: {
+        Row: {
+          client_id: string
+          commission_percentage: number
+          company_id: string
+          created_at: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          partner_id: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          commission_percentage: number
+          company_id: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          partner_id: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          commission_percentage?: number
+          company_id?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          partner_id?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_client_agreements_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_client_agreements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_client_agreements_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_commissions: {
+        Row: {
+          agreement_id: string
+          base_amount: number
+          client_id: string
+          client_invoice_id: string
+          commission_amount: number
+          commission_percentage: number
+          company_id: string
+          created_at: string
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          paid_date: string | null
+          partner_id: string
+          payment_method: string | null
+          reference_month: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agreement_id: string
+          base_amount: number
+          client_id: string
+          client_invoice_id: string
+          commission_amount: number
+          commission_percentage: number
+          company_id: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          paid_date?: string | null
+          partner_id: string
+          payment_method?: string | null
+          reference_month: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agreement_id?: string
+          base_amount?: number
+          client_id?: string
+          client_invoice_id?: string
+          commission_amount?: number
+          commission_percentage?: number
+          company_id?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          paid_date?: string | null
+          partner_id?: string
+          payment_method?: string | null
+          reference_month?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_commissions_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "partner_client_agreements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_commissions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_commissions_client_invoice_id_fkey"
+            columns: ["client_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_commissions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_commissions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_commissions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          bank_account: string | null
+          bank_agency: string | null
+          bank_name: string | null
+          cnpj: string | null
+          company_id: string
+          cpf: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          pix_key: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
+          cnpj?: string | null
+          company_id: string
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          pix_key?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
+          cnpj?: string | null
+          company_id?: string
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          pix_key?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partners_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           billing_period: Database["public"]["Enums"]["billing_period"]

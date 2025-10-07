@@ -21,6 +21,8 @@ import Settings from "./pages/superadmin/Settings";
 import CompanyServices from "./pages/company/Services";
 import Clients from "./pages/company/Clients";
 import ClientProfile from "./pages/company/ClientProfile";
+import Partners from "./pages/company/Partners";
+import PartnerProfile from "./pages/company/PartnerProfile";
 import Invoices from "./pages/company/Invoices";
 import Receivable from "./pages/company/invoices/Receivable";
 import Payable from "./pages/company/invoices/Payable";
@@ -112,6 +114,26 @@ const App = () => (
                 <ProtectedRoute>
                   <CompanyRoute>
                     <ClientProfile />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/partners"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <Partners />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/partners/:id"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <PartnerProfile />
                   </CompanyRoute>
                 </ProtectedRoute>
               }
