@@ -166,6 +166,20 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Descreva a despesa" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -225,20 +239,6 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
                   <FormLabel>Categoria (Opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: AWS, Google Ads, Domínio" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Descreva a despesa" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
