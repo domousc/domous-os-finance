@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,6 +18,8 @@ interface PartnerCommissionsProps {
 }
 
 export function PartnerCommissions({ partnerId }: PartnerCommissionsProps) {
+  const queryClient = useQueryClient();
+  
   const { data: commissions, isLoading } = useQuery({
     queryKey: ["partner-commissions", partnerId],
     queryFn: async () => {
@@ -37,6 +40,23 @@ export function PartnerCommissions({ partnerId }: PartnerCommissionsProps) {
       return data;
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("partner-commissions-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "partner_commissions" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["partner-commissions", partnerId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [partnerId, queryClient]);
 
   if (isLoading) return <div>Carregando...</div>;
 
