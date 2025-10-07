@@ -137,6 +137,48 @@ export type Database = {
           },
         ]
       }
+      commissions: {
+        Row: {
+          client_id: string
+          commission_amount: number
+          commission_percentage: number
+          company_id: string
+          created_at: string
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          reference_month: string
+          sales_amount: number
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          commission_amount: number
+          commission_percentage: number
+          company_id: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          reference_month: string
+          sales_amount: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          commission_amount?: number
+          commission_percentage?: number
+          company_id?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          reference_month?: string
+          sales_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           address: string | null

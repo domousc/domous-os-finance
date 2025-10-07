@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ClientInfo } from "@/components/company/clients/profile/ClientInfo";
 import { ClientServicesSection } from "@/components/company/clients/profile/ClientServicesSection";
 import { ClientInvoicesSection } from "@/components/company/clients/profile/ClientInvoicesSection";
+import { ClientCommissionsSection } from "@/components/company/clients/profile/ClientCommissionsSection";
 import { LinkServiceDialog } from "@/components/company/clients/profile/LinkServiceDialog";
 
 export default function ClientProfile() {
@@ -34,6 +35,8 @@ export default function ClientProfile() {
           clientId={id!}
           onAddService={() => setLinkServiceOpen(true)}
         />
+
+        <ClientCommissionsSection clientId={id!} />
 
         <ClientInvoicesSection clientId={id!} />
 
