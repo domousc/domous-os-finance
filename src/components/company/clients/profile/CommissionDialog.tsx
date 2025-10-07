@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -37,11 +37,22 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
+interface Commission {
+  id: string;
+  sales_amount: number;
+  commission_percentage: number;
+  commission_amount: number;
+  reference_month: string;
+  notes: string | null;
+  invoice_id: string | null;
+}
+
 interface CommissionDialogProps {
   open: boolean;
   onClose: () => void;
   clientId: string;
   onSuccess: () => void;
+  commission?: Commission | null;
 }
 
 export function CommissionDialog({
@@ -49,6 +60,7 @@ export function CommissionDialog({
   onClose,
   clientId,
   onSuccess,
+  commission,
 }: CommissionDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -56,12 +68,31 @@ export function CommissionDialog({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      sales_amount: "",
-      commission_percentage: "",
-      reference_month: new Date(),
-      notes: "",
+      sales_amount: commission?.sales_amount.toString() || "",
+      commission_percentage: commission?.commission_percentage.toString() || "",
+      reference_month: commission ? new Date(commission.reference_month) : new Date(),
+      notes: commission?.notes || "",
     },
   });
+
+  // Update form when commission changes
+  useEffect(() => {
+    if (commission) {
+      form.reset({
+        sales_amount: commission.sales_amount.toString(),
+        commission_percentage: commission.commission_percentage.toString(),
+        reference_month: new Date(commission.reference_month),
+        notes: commission.notes || "",
+      });
+    } else {
+      form.reset({
+        sales_amount: "",
+        commission_percentage: "",
+        reference_month: new Date(),
+        notes: "",
+      });
+    }
+  }, [commission, form]);
 
   const salesAmount = form.watch("sales_amount");
   const commissionPercentage = form.watch("commission_percentage");
@@ -92,67 +123,107 @@ export function CommissionDialog({
 
       const referenceMonth = format(values.reference_month, "yyyy-MM-dd");
 
-      // Insert commission record
-      const { data: commission, error: commissionError } = await supabase
-        .from("commissions")
-        .insert({
-          company_id: profile.company_id,
-          client_id: clientId,
-          sales_amount: salesAmount,
-          commission_percentage: commissionPercentage,
-          commission_amount: commissionAmount,
-          reference_month: referenceMonth,
-          notes: values.notes,
-        })
-        .select()
-        .single();
+      if (commission) {
+        // Update existing commission
+        const { error: commissionError } = await supabase
+          .from("commissions")
+          .update({
+            sales_amount: salesAmount,
+            commission_percentage: commissionPercentage,
+            commission_amount: commissionAmount,
+            reference_month: referenceMonth,
+            notes: values.notes,
+          })
+          .eq("id", commission.id);
 
-      if (commissionError) throw commissionError;
+        if (commissionError) throw commissionError;
 
-      // Generate invoice number
-      const { data: invoiceNumberData, error: invoiceNumberError } = await supabase
-        .rpc("generate_invoice_number", { company_uuid: profile.company_id });
+        // Update associated invoice if exists
+        if (commission.invoice_id) {
+          const dueDate = new Date(values.reference_month);
+          dueDate.setMonth(dueDate.getMonth() + 1);
 
-      if (invoiceNumberError) throw invoiceNumberError;
+          const { error: invoiceError } = await supabase
+            .from("invoices")
+            .update({
+              amount: commissionAmount,
+              due_date: dueDate.toISOString(),
+              notes: `Comissão - ${values.notes || "Ref: " + format(values.reference_month, "MM/yyyy")}`,
+            })
+            .eq("id", commission.invoice_id);
 
-      // Create invoice
-      const dueDate = new Date(values.reference_month);
-      dueDate.setMonth(dueDate.getMonth() + 1);
+          if (invoiceError) throw invoiceError;
+        }
 
-      const { error: invoiceError } = await supabase
-        .from("invoices")
-        .insert({
-          company_id: profile.company_id,
-          client_id: clientId,
-          invoice_number: invoiceNumberData,
-          amount: commissionAmount,
-          due_date: dueDate.toISOString(),
-          status: "pending",
-          notes: `Comissão - ${values.notes || "Ref: " + format(values.reference_month, "MM/yyyy")}`,
-          cycle_number: 1,
-          client_service_id: null,
-          service_id: null,
+        toast({
+          title: "Comissão atualizada!",
+          description: `Novo valor: R$ ${commissionAmount.toFixed(2)}`,
         });
+      } else {
+        // Insert new commission record
+        const { data: newCommission, error: commissionError } = await supabase
+          .from("commissions")
+          .insert({
+            company_id: profile.company_id,
+            client_id: clientId,
+            sales_amount: salesAmount,
+            commission_percentage: commissionPercentage,
+            commission_amount: commissionAmount,
+            reference_month: referenceMonth,
+            notes: values.notes,
+          })
+          .select()
+          .single();
 
-      if (invoiceError) throw invoiceError;
+        if (commissionError) throw commissionError;
 
-      // Update commission with invoice reference
-      await supabase
-        .from("commissions")
-        .update({ invoice_id: commission.id })
-        .eq("id", commission.id);
+        // Generate invoice number
+        const { data: invoiceNumberData, error: invoiceNumberError } = await supabase
+          .rpc("generate_invoice_number", { company_uuid: profile.company_id });
 
-      toast({
-        title: "Comissão registrada!",
-        description: `Valor calculado: R$ ${commissionAmount.toFixed(2)}`,
-      });
+        if (invoiceNumberError) throw invoiceNumberError;
+
+        // Create invoice
+        const dueDate = new Date(values.reference_month);
+        dueDate.setMonth(dueDate.getMonth() + 1);
+
+        const { data: newInvoice, error: invoiceError } = await supabase
+          .from("invoices")
+          .insert({
+            company_id: profile.company_id,
+            client_id: clientId,
+            invoice_number: invoiceNumberData,
+            amount: commissionAmount,
+            due_date: dueDate.toISOString(),
+            status: "pending",
+            notes: `Comissão - ${values.notes || "Ref: " + format(values.reference_month, "MM/yyyy")}`,
+            cycle_number: 1,
+            client_service_id: null,
+            service_id: null,
+          })
+          .select()
+          .single();
+
+        if (invoiceError) throw invoiceError;
+
+        // Update commission with invoice reference
+        await supabase
+          .from("commissions")
+          .update({ invoice_id: newInvoice.id })
+          .eq("id", newCommission.id);
+
+        toast({
+          title: "Comissão registrada!",
+          description: `Valor calculado: R$ ${commissionAmount.toFixed(2)}`,
+        });
+      }
 
       form.reset();
       onSuccess();
       onClose();
     } catch (error: any) {
       toast({
-        title: "Erro ao registrar comissão",
+        title: commission ? "Erro ao atualizar comissão" : "Erro ao registrar comissão",
         description: error.message,
         variant: "destructive",
       });
@@ -165,7 +236,9 @@ export function CommissionDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Registrar Comissão de Vendas</DialogTitle>
+          <DialogTitle>
+            {commission ? "Editar Comissão de Vendas" : "Registrar Comissão de Vendas"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -280,7 +353,7 @@ export function CommissionDialog({
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Registrar e Gerar Fatura
+                {commission ? "Atualizar Comissão" : "Registrar e Gerar Fatura"}
               </Button>
             </div>
           </form>

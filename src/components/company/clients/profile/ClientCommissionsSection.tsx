@@ -2,10 +2,21 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Percent } from "lucide-react";
+import { Plus, Percent, Pencil, Trash2 } from "lucide-react";
 import { CommissionDialog } from "./CommissionDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Commission {
   id: string;
@@ -15,6 +26,7 @@ interface Commission {
   reference_month: string;
   notes: string | null;
   created_at: string;
+  invoice_id: string | null;
 }
 
 interface ClientCommissionsSectionProps {
@@ -25,6 +37,10 @@ export function ClientCommissionsSection({ clientId }: ClientCommissionsSectionP
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingCommission, setEditingCommission] = useState<Commission | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commissionToDelete, setCommissionToDelete] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchCommissions = async () => {
     try {
@@ -46,6 +62,61 @@ export function ClientCommissionsSection({ clientId }: ClientCommissionsSectionP
   useEffect(() => {
     fetchCommissions();
   }, [clientId]);
+
+  const handleEdit = (commission: Commission) => {
+    setEditingCommission(commission);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!commissionToDelete) return;
+
+    try {
+      // First, get the commission to find associated invoice
+      const { data: commission } = await supabase
+        .from("commissions")
+        .select("invoice_id")
+        .eq("id", commissionToDelete)
+        .single();
+
+      // Delete the commission
+      const { error: commissionError } = await supabase
+        .from("commissions")
+        .delete()
+        .eq("id", commissionToDelete);
+
+      if (commissionError) throw commissionError;
+
+      // If there's an associated invoice, delete it too
+      if (commission?.invoice_id) {
+        await supabase
+          .from("invoices")
+          .delete()
+          .eq("id", commission.invoice_id);
+      }
+
+      toast({
+        title: "Comissão excluída",
+        description: "A comissão e sua fatura foram removidas com sucesso.",
+      });
+
+      fetchCommissions();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir comissão",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setCommissionToDelete(null);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setEditingCommission(null);
+  };
 
   if (loading) {
     return <div>Carregando comissões...</div>;
@@ -75,8 +146,8 @@ export function ClientCommissionsSection({ clientId }: ClientCommissionsSectionP
               key={commission.id}
               className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
             >
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1 flex-1">
                   <p className="font-medium">
                     {format(new Date(commission.reference_month), "MMMM 'de' yyyy", {
                       locale: ptBR,
@@ -88,11 +159,30 @@ export function ClientCommissionsSection({ clientId }: ClientCommissionsSectionP
                     {commission.notes && <p className="italic">{commission.notes}</p>}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex-shrink-0">
                   <p className="text-sm text-muted-foreground">Valor a Receber</p>
                   <p className="text-xl font-bold text-primary">
                     R$ {commission.commission_amount.toFixed(2)}
                   </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEdit(commission)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setCommissionToDelete(commission.id);
+                      setDeleteDialogOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -102,10 +192,31 @@ export function ClientCommissionsSection({ clientId }: ClientCommissionsSectionP
 
       <CommissionDialog
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        onClose={handleCloseDialog}
         clientId={clientId}
-        onSuccess={fetchCommissions}
+        onSuccess={() => {
+          fetchCommissions();
+          handleCloseDialog();
+        }}
+        commission={editingCommission}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta comissão? A fatura associada também será removida. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
