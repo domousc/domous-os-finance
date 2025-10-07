@@ -75,7 +75,7 @@ const App = () => (
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   
-                  {/* Company Dashboard Routes */}
+                  {/* Company Dashboard Routes - Updated */}
             <Route
               path="/dashboard"
               element={
