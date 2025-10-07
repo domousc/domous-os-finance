@@ -21,12 +21,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   sales_amount: z.string().min(1, "Valor de vendas é obrigatório"),
   commission_percentage: z.string().min(1, "Porcentagem é obrigatória"),
-  reference_month: z.string().min(1, "Mês de referência é obrigatório"),
+  reference_month: z.date({
+    required_error: "Mês de referência é obrigatório",
+  }),
   notes: z.string().optional(),
 });
 
@@ -51,7 +58,7 @@ export function CommissionDialog({
     defaultValues: {
       sales_amount: "",
       commission_percentage: "",
-      reference_month: new Date().toISOString().slice(0, 7),
+      reference_month: new Date(),
       notes: "",
     },
   });
@@ -83,6 +90,8 @@ export function CommissionDialog({
       const commissionPercentage = parseFloat(values.commission_percentage);
       const commissionAmount = salesAmount * commissionPercentage / 100;
 
+      const referenceMonth = format(values.reference_month, "yyyy-MM-dd");
+
       // Insert commission record
       const { data: commission, error: commissionError } = await supabase
         .from("commissions")
@@ -92,7 +101,7 @@ export function CommissionDialog({
           sales_amount: salesAmount,
           commission_percentage: commissionPercentage,
           commission_amount: commissionAmount,
-          reference_month: values.reference_month + "-01",
+          reference_month: referenceMonth,
           notes: values.notes,
         })
         .select()
@@ -107,7 +116,7 @@ export function CommissionDialog({
       if (invoiceNumberError) throw invoiceNumberError;
 
       // Create invoice
-      const dueDate = new Date(values.reference_month + "-01");
+      const dueDate = new Date(values.reference_month);
       dueDate.setMonth(dueDate.getMonth() + 1);
 
       const { error: invoiceError } = await supabase
@@ -119,8 +128,10 @@ export function CommissionDialog({
           amount: commissionAmount,
           due_date: dueDate.toISOString(),
           status: "pending",
-          notes: `Comissão - ${values.notes || "Ref: " + values.reference_month}`,
+          notes: `Comissão - ${values.notes || "Ref: " + format(values.reference_month, "MM/yyyy")}`,
           cycle_number: 1,
+          client_service_id: null,
+          service_id: null,
         });
 
       if (invoiceError) throw invoiceError;
@@ -163,11 +174,37 @@ export function CommissionDialog({
               control={form.control}
               name="reference_month"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Mês de Referência</FormLabel>
-                  <FormControl>
-                    <Input type="month" {...field} />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "MMMM 'de' yyyy", { locale: ptBR })
+                          ) : (
+                            <span>Selecione o mês</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}

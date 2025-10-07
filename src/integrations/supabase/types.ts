@@ -234,7 +234,7 @@ export type Database = {
         Row: {
           amount: number
           client_id: string
-          client_service_id: string
+          client_service_id: string | null
           company_id: string
           created_at: string
           cycle_number: number
@@ -244,14 +244,14 @@ export type Database = {
           notes: string | null
           paid_date: string | null
           payment_method: string | null
-          service_id: string
+          service_id: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           updated_at: string
         }
         Insert: {
           amount: number
           client_id: string
-          client_service_id: string
+          client_service_id?: string | null
           company_id: string
           created_at?: string
           cycle_number: number
@@ -261,14 +261,14 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
-          service_id: string
+          service_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           updated_at?: string
         }
         Update: {
           amount?: number
           client_id?: string
-          client_service_id?: string
+          client_service_id?: string | null
           company_id?: string
           created_at?: string
           cycle_number?: number
@@ -278,7 +278,7 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
-          service_id?: string
+          service_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           updated_at?: string
         }
