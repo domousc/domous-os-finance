@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { LucideIcon } from "lucide-react";
 import { AppHeader } from "./AppHeader";
 import { AppFooter } from "./AppFooter";
+import { BottomNav } from "./BottomNav";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -101,9 +102,10 @@ export const AppLayout = ({
       <AppHeader title={headerTitle} badge={headerBadge} />
 
       <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar - Desktop Only */}
         <aside
           className={cn(
-            "border-r border-border bg-card transition-all duration-300 flex flex-col",
+            "hidden md:flex border-r border-border bg-card transition-all duration-300 flex-col",
             isHovered ? "w-64" : "w-20",
             !isHovered && "overflow-hidden"
           )}
@@ -116,11 +118,14 @@ export const AppLayout = ({
         </aside>
 
         <main className="flex-1 overflow-y-auto bg-background">
-          <div className="container mx-auto p-6">{children}</div>
+          <div className="container mx-auto p-6 pb-20 md:pb-6">{children}</div>
         </main>
       </div>
 
-      <AppFooter />
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNav menuItems={menuItems} />
+
+      <AppFooter className="hidden md:block" />
     </div>
   );
 };
