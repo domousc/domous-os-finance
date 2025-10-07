@@ -6,7 +6,6 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { MenuItem } from "./AppLayout";
 import { cn } from "@/lib/utils";
@@ -25,9 +24,6 @@ export const BottomNav = ({ menuItems }: BottomNavProps) => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Pega apenas os 4 primeiros itens principais
-  const mainItems = menuItems.slice(0, 4);
-
   const handleItemClick = (item: MenuItem) => {
     if (item.submenu && item.submenu.length > 0) {
       setSelectedMenu(item);
@@ -45,33 +41,39 @@ export const BottomNav = ({ menuItems }: BottomNavProps) => {
 
   return (
     <>
-      {/* Bottom Navigation Bar - Fixed */}
+      {/* Bottom Navigation Bar - Horizontal Scroll */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-        <div className="flex items-center justify-around h-16 px-2">
-          {mainItems.map((item) => {
-            const active = isActive(item.path) || 
-              (item.submenu?.some(sub => isActive(sub.path)));
-            const Icon = item.icon;
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-1 h-16 px-2 min-w-max">
+            {menuItems.map((item) => {
+              const active = isActive(item.path) || 
+                (item.submenu?.some(sub => isActive(sub.path)));
+              const Icon = item.icon;
 
-            return (
-              <Button
-                key={item.label}
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 h-14 flex-1 rounded-lg",
-                  active && "bg-primary/10 text-primary"
-                )}
-                onClick={() => handleItemClick(item)}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs font-medium truncate max-w-[60px]">
-                  {item.label}
-                </span>
-              </Button>
-            );
-          })}
+              return (
+                <Button
+                  key={item.label}
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 h-14 min-w-[72px] px-3 rounded-lg shrink-0",
+                    active && "bg-primary/10 text-primary"
+                  )}
+                  onClick={() => handleItemClick(item)}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="text-[10px] font-medium truncate max-w-[64px]">
+                    {item.label}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
         </div>
+        
+        {/* Indicador de scroll (gradient nas bordas) */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-card/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card/95 to-transparent" />
       </nav>
 
       {/* Drawer para Submenu */}
