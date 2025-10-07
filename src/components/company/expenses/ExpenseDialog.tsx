@@ -429,8 +429,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
                     <SelectContent>
                       <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
                       <SelectItem value="Cartão de Débito">Cartão de Débito</SelectItem>
-                      <SelectItem value="Boleto">Boleto</SelectItem>
-                      <SelectItem value="PIX">PIX</SelectItem>
+                      <SelectItem value="PIX/Boleto">PIX/Boleto</SelectItem>
                       <SelectItem value="Dinheiro">Dinheiro</SelectItem>
                       <SelectItem value="Outros">Outros</SelectItem>
                     </SelectContent>
