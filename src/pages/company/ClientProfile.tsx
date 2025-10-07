@@ -1,41 +1,13 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/shared/AppLayout";
-import { MenuItem } from "@/components/shared/AppLayout";
-import { Users, LayoutDashboard, Settings, DollarSign, Package, ArrowLeft } from "lucide-react";
+import { companyMenuItems } from "@/config/companyMenuItems";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClientInfo } from "@/components/company/clients/profile/ClientInfo";
 import { ClientServicesSection } from "@/components/company/clients/profile/ClientServicesSection";
 import { ClientInvoicesSection } from "@/components/company/clients/profile/ClientInvoicesSection";
 import { LinkServiceDialog } from "@/components/company/clients/profile/LinkServiceDialog";
-
-const menuItems: MenuItem[] = [
-  {
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    path: "/dashboard",
-  },
-  {
-    icon: Users,
-    label: "Clientes",
-    path: "/dashboard/clients",
-  },
-  {
-    icon: Package,
-    label: "Serviços",
-    path: "/dashboard/services",
-  },
-  {
-    icon: DollarSign,
-    label: "Financeiro",
-    path: "/dashboard/invoices",
-  },
-  {
-    icon: Settings,
-    label: "Configurações",
-    path: "/dashboard/settings",
-  },
-];
 
 export default function ClientProfile() {
   const { id } = useParams<{ id: string }>();
@@ -43,7 +15,7 @@ export default function ClientProfile() {
   const [linkServiceOpen, setLinkServiceOpen] = useState(false);
 
   return (
-    <AppLayout menuItems={menuItems} headerTitle="Perfil do Cliente">
+    <AppLayout menuItems={companyMenuItems} headerTitle="Perfil do Cliente">
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button

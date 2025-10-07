@@ -1,78 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  DollarSign,
-  UserCheck,
-  FileBarChart,
-  UsersRound,
-  Settings,
-  UserPlus,
-  UserCircle,
-  Briefcase,
-} from "lucide-react";
-import { AppLayout, MenuItem } from "@/components/shared/AppLayout";
+import { AppLayout } from "@/components/shared/AppLayout";
+import { companyMenuItems } from "@/config/companyMenuItems";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useRole } from "@/contexts/RoleContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-const menuItems: MenuItem[] = [
-  {
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    path: "/dashboard",
-  },
-  {
-    icon: Users,
-    label: "Clientes",
-    path: "/dashboard/clients",
-  },
-  {
-    icon: Briefcase,
-    label: "Serviços",
-    path: "/dashboard/services",
-  },
-  {
-    icon: DollarSign,
-    label: "Financeiro",
-    path: "/dashboard/financial",
-  },
-  {
-    icon: UserCheck,
-    label: "Controle Pessoal",
-    path: "/dashboard/personal",
-  },
-  {
-    icon: FileBarChart,
-    label: "Relatórios Gerais",
-    path: "/dashboard/reports",
-  },
-  {
-    icon: UsersRound,
-    label: "Times",
-    path: "/dashboard/teams",
-  },
-  {
-    icon: Settings,
-    label: "Configurações",
-    path: "/dashboard/settings",
-    submenu: [
-      {
-        icon: UserPlus,
-        label: "Cadastro de Usuários",
-        path: "/dashboard/settings/users",
-      },
-      {
-        icon: UserCircle,
-        label: "Perfil",
-        path: "/dashboard/settings/profile",
-      },
-    ],
-  },
-];
+import { DollarSign, Users, FileBarChart } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -150,7 +85,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout
-      menuItems={menuItems}
+      menuItems={companyMenuItems}
       headerTitle="Domous OS"
       headerBadge="Painel de Gestão"
     >

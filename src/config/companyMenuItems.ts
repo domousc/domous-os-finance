@@ -1,0 +1,30 @@
+import { MenuItem } from "@/components/shared/AppLayout";
+import { Users, LayoutDashboard, Settings, DollarSign, Package } from "lucide-react";
+
+export const companyMenuItems: MenuItem[] = [
+  {
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    path: "/dashboard",
+  },
+  {
+    icon: Users,
+    label: "Clientes",
+    path: "/dashboard/clients",
+  },
+  {
+    icon: Package,
+    label: "Serviços",
+    path: "/dashboard/services",
+  },
+  {
+    icon: DollarSign,
+    label: "Financeiro",
+    path: "/dashboard/invoices",
+  },
+  {
+    icon: Settings,
+    label: "Configurações",
+    path: "/dashboard/settings",
+  },
+];
