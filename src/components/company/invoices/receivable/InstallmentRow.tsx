@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InvoicePaymentDialog } from "../InvoicePaymentDialog";
+import { EditInvoiceDialog } from "../EditInvoiceDialog";
 
 interface Invoice {
   id: string;
@@ -29,6 +30,7 @@ export function InstallmentRow({
   totalInstallments,
 }: InstallmentRowProps) {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const getStatusLabel = (status: string) => {
@@ -105,6 +107,14 @@ export function InstallmentRow({
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setEditDialogOpen(true)}
+                  title="Editar fatura"
+                >
+                  <Pencil className="h-4 w-4 text-blue-600" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setPaymentDialogOpen(true)}
                   title="Marcar como paga"
                 >
@@ -127,6 +137,12 @@ export function InstallmentRow({
       <InvoicePaymentDialog
         open={paymentDialogOpen}
         onClose={() => setPaymentDialogOpen(false)}
+        invoice={installment}
+      />
+
+      <EditInvoiceDialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
         invoice={installment}
       />
     </>
