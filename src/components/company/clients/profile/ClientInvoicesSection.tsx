@@ -19,9 +19,10 @@ interface Invoice {
   due_date: string;
   paid_date: string | null;
   status: string;
+  notes: string | null;
   services: {
     title: string;
-  };
+  } | null;
 }
 
 interface ClientInvoicesSectionProps {
@@ -135,7 +136,10 @@ export function ClientInvoicesSection({ clientId }: ClientInvoicesSectionProps) 
                   <TableCell className="font-medium">
                     {invoice.invoice_number}
                   </TableCell>
-                  <TableCell>{invoice.services.title}</TableCell>
+                  <TableCell>
+                    {invoice.services?.title || 
+                     (invoice.notes?.includes("Comissão") ? "Comissão" : "N/A")}
+                  </TableCell>
                   <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                   <TableCell>
                     {format(new Date(invoice.due_date), "dd/MM/yyyy")}
