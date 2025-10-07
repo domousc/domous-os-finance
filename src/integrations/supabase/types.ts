@@ -554,6 +554,54 @@ export type Database = {
           },
         ]
       }
+      personal_transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          description: string
+          due_date: string
+          id: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          description: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          description?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           billing_period: Database["public"]["Enums"]["billing_period"]
@@ -830,6 +878,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      update_overdue_personal_transactions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "superadmin" | "admin" | "gestor" | "financeiro" | "operador"
@@ -844,6 +896,8 @@ export type Database = {
         | "cancelled"
         | "expired"
         | "trial"
+      transaction_status: "pending" | "paid" | "overdue" | "cancelled"
+      transaction_type: "receivable" | "payable"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -984,6 +1038,8 @@ export const Constants = {
         "expired",
         "trial",
       ],
+      transaction_status: ["pending", "paid", "overdue", "cancelled"],
+      transaction_type: ["receivable", "payable"],
     },
   },
 } as const

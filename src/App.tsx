@@ -26,6 +26,7 @@ import PartnerProfile from "./pages/company/PartnerProfile";
 import Invoices from "./pages/company/Invoices";
 import Receivable from "./pages/company/invoices/Receivable";
 import Payable from "./pages/company/invoices/Payable";
+import PersonalFinance from "./pages/company/PersonalFinance";
 import Dashboard from "./pages/company/Dashboard";
 import SubscriptionExpired from "./pages/company/SubscriptionExpired";
 import Login from "./pages/auth/Login";
@@ -164,6 +165,16 @@ const App = () => (
                 <ProtectedRoute>
                   <CompanyRoute>
                     <Payable />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/personal-finance"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <PersonalFinance />
                   </CompanyRoute>
                 </ProtectedRoute>
               }
