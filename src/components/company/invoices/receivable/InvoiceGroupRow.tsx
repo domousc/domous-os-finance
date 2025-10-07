@@ -10,9 +10,9 @@ interface Client {
   document: string | null;
 }
 
-interface Service {
+type Service = {
   title: string;
-}
+} | null;
 
 interface Invoice {
   id: string;
@@ -77,7 +77,10 @@ export function InvoiceGroupRow({ group }: InvoiceGroupRowProps) {
           </Button>
         </TableCell>
         <TableCell className="font-medium">{group.client.name}</TableCell>
-        <TableCell>{group.service.title}</TableCell>
+        <TableCell>
+          {group.service?.title || 
+           (group.installments[0]?.notes?.includes("Comissão") ? "Comissão" : "N/A")}
+        </TableCell>
         <TableCell>R$ {group.totalAmount.toFixed(2)}</TableCell>
         <TableCell>
           <span className="text-sm">
