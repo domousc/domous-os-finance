@@ -1,5 +1,5 @@
 import { MenuItem } from "@/components/shared/AppLayout";
-import { Users, LayoutDashboard, Settings, DollarSign, Package } from "lucide-react";
+import { Users, LayoutDashboard, Settings, DollarSign, Package, TrendingUp, TrendingDown } from "lucide-react";
 
 export const companyMenuItems: MenuItem[] = [
   {
@@ -21,6 +21,18 @@ export const companyMenuItems: MenuItem[] = [
     icon: DollarSign,
     label: "Financeiro",
     path: "/dashboard/invoices",
+    submenu: [
+      {
+        icon: TrendingUp,
+        label: "A Receber",
+        path: "/dashboard/invoices/receivable",
+      },
+      {
+        icon: TrendingDown,
+        label: "A Pagar",
+        path: "/dashboard/invoices/payable",
+      },
+    ],
   },
   {
     icon: Settings,
