@@ -249,13 +249,17 @@ export type Database = {
           category: string | null
           company_id: string
           created_at: string
+          current_installment: number | null
           description: string
           due_date: string
           id: string
+          installment_group_id: string | null
           notes: string | null
           paid_date: string | null
           payment_method: string | null
           status: Database["public"]["Enums"]["transaction_status"]
+          total_amount: number | null
+          total_installments: number | null
           type: Database["public"]["Enums"]["expense_type"]
           updated_at: string
         }
@@ -265,13 +269,17 @@ export type Database = {
           category?: string | null
           company_id: string
           created_at?: string
+          current_installment?: number | null
           description: string
           due_date: string
           id?: string
+          installment_group_id?: string | null
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
+          total_amount?: number | null
+          total_installments?: number | null
           type: Database["public"]["Enums"]["expense_type"]
           updated_at?: string
         }
@@ -281,13 +289,17 @@ export type Database = {
           category?: string | null
           company_id?: string
           created_at?: string
+          current_installment?: number | null
           description?: string
           due_date?: string
           id?: string
+          installment_group_id?: string | null
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
+          total_amount?: number | null
+          total_installments?: number | null
           type?: Database["public"]["Enums"]["expense_type"]
           updated_at?: string
         }

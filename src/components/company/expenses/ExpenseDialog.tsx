@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 
 const expenseSchema = z.object({
@@ -40,6 +41,8 @@ const expenseSchema = z.object({
   due_date: z.string().min(1, "Data de vencimento é obrigatória"),
   payment_method: z.string().optional(),
   notes: z.string().optional(),
+  is_installment: z.boolean().optional(),
+  installments: z.string().optional(),
 });
 
 type ExpenseFormData = z.infer<typeof expenseSchema>;
@@ -54,6 +57,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isInstallment, setIsInstallment] = useState(false);
 
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
@@ -66,22 +70,28 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
       due_date: "",
       payment_method: "",
       notes: "",
+      is_installment: false,
+      installments: "1",
     },
   });
 
   useEffect(() => {
     if (expense) {
+      setIsInstallment(expense.total_installments > 1);
       form.reset({
         type: expense.type,
         category: expense.category || "",
         description: expense.description,
-        amount: expense.amount.toString(),
+        amount: expense.total_installments > 1 ? expense.total_amount.toString() : expense.amount.toString(),
         billing_cycle: expense.billing_cycle,
         due_date: new Date(expense.due_date).toISOString().split("T")[0],
         payment_method: expense.payment_method || "",
         notes: expense.notes || "",
+        is_installment: expense.total_installments > 1,
+        installments: expense.total_installments.toString(),
       });
     } else {
+      setIsInstallment(false);
       form.reset({
         type: "subscription",
         billing_cycle: "monthly",
@@ -91,6 +101,8 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
         due_date: "",
         payment_method: "",
         notes: "",
+        is_installment: false,
+        installments: "1",
       });
     }
   }, [expense, form]);
@@ -105,29 +117,61 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
 
       if (!profile?.company_id) throw new Error("Company not found");
 
-      const expenseData = {
-        company_id: profile.company_id,
-        type: data.type,
-        category: data.category || null,
-        description: data.description,
-        amount: parseFloat(data.amount),
-        billing_cycle: data.billing_cycle,
-        due_date: new Date(data.due_date).toISOString(),
-        payment_method: data.payment_method || null,
-        notes: data.notes || null,
-        status: "pending" as const,
-      };
+      const totalAmount = parseFloat(data.amount);
+      const installments = data.is_installment ? parseInt(data.installments || "1") : 1;
+      const installmentAmount = totalAmount / installments;
 
       if (expense) {
+        // Se está editando e é parcelado, só permite editar a parcela atual
+        const expenseData = {
+          company_id: profile.company_id,
+          type: data.type,
+          category: data.category || null,
+          description: data.description,
+          amount: parseFloat(data.amount),
+          billing_cycle: data.billing_cycle,
+          due_date: new Date(data.due_date).toISOString(),
+          payment_method: data.payment_method || null,
+          notes: data.notes || null,
+        };
+
         const { error } = await supabase
           .from("company_expenses")
           .update(expenseData)
           .eq("id", expense.id);
         if (error) throw error;
       } else {
+        // Criar nova despesa
+        const installmentGroupId = installments > 1 ? crypto.randomUUID() : null;
+        const firstDueDate = new Date(data.due_date);
+
+        const expensesToCreate = [];
+        
+        for (let i = 0; i < installments; i++) {
+          const currentDueDate = new Date(firstDueDate);
+          currentDueDate.setMonth(currentDueDate.getMonth() + i);
+
+          expensesToCreate.push({
+            company_id: profile.company_id,
+            type: data.type,
+            category: data.category || null,
+            description: installments > 1 ? `${data.description} (${i + 1}/${installments})` : data.description,
+            amount: installmentAmount,
+            total_amount: totalAmount,
+            billing_cycle: data.billing_cycle,
+            due_date: currentDueDate.toISOString(),
+            payment_method: data.payment_method || null,
+            notes: data.notes || null,
+            status: "pending" as const,
+            installment_group_id: installmentGroupId,
+            total_installments: installments,
+            current_installment: i + 1,
+          });
+        }
+
         const { error } = await supabase
           .from("company_expenses")
-          .insert(expenseData);
+          .insert(expensesToCreate);
         if (error) throw error;
       }
     },
@@ -251,7 +295,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Valor</FormLabel>
+                    <FormLabel>{isInstallment ? "Valor Total" : "Valor"}</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="0.00" {...field} />
                     </FormControl>
@@ -274,6 +318,59 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
                 )}
               />
             </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="installment-mode"
+                checked={isInstallment}
+                onCheckedChange={(checked) => {
+                  setIsInstallment(checked);
+                  form.setValue("is_installment", checked);
+                  if (!checked) {
+                    form.setValue("installments", "1");
+                  }
+                }}
+                disabled={!!expense}
+              />
+              <label
+                htmlFor="installment-mode"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Parcelar despesa
+              </label>
+            </div>
+
+            {isInstallment && (
+              <FormField
+                control={form.control}
+                name="installments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número de Parcelas</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="2"
+                        max="60"
+                        placeholder="Ex: 12"
+                        {...field}
+                        disabled={!!expense}
+                      />
+                    </FormControl>
+                    {field.value && parseFloat(form.watch("amount") || "0") > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        {parseInt(field.value)}x de{" "}
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(parseFloat(form.watch("amount")) / parseInt(field.value))}
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}

@@ -110,7 +110,14 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
   return (
     <TableRow>
       <TableCell>
-        <div className="font-medium">{expense.description}</div>
+        <div className="font-medium">
+          {expense.description}
+          {expense.total_installments > 1 && (
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({expense.current_installment}/{expense.total_installments})
+            </span>
+          )}
+        </div>
         {expense.category && (
           <div className="text-sm text-muted-foreground">{expense.category}</div>
         )}
@@ -122,10 +129,20 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
         <Badge variant="secondary">{billingCycleLabels[expense.billing_cycle]}</Badge>
       </TableCell>
       <TableCell>
-        {new Intl.NumberFormat("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        }).format(expense.amount)}
+        <div>
+          {new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }).format(expense.amount)}
+        </div>
+        {expense.total_installments > 1 && expense.total_amount && (
+          <div className="text-xs text-muted-foreground">
+            Total: {new Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(expense.total_amount)}
+          </div>
+        )}
       </TableCell>
       <TableCell>{format(new Date(expense.due_date), "dd/MM/yyyy")}</TableCell>
       <TableCell>
