@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_services: {
+        Row: {
+          client_id: string
+          company_id: string
+          created_at: string
+          custom_price: number | null
+          cycles: number
+          first_due_date: string | null
+          id: string
+          service_id: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          company_id: string
+          created_at?: string
+          custom_price?: number | null
+          cycles?: number
+          first_due_date?: string | null
+          id?: string
+          service_id: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          company_id?: string
+          created_at?: string
+          custom_price?: number | null
+          cycles?: number
+          first_due_date?: string | null
+          id?: string
+          service_id?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_services_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_services_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_id: string
+          created_at: string
+          document: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          state: string | null
+          status: string
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_id: string
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          status?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_id?: string
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          status?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -64,6 +187,89 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount: number
+          client_id: string
+          client_service_id: string
+          company_id: string
+          created_at: string
+          cycle_number: number
+          due_date: string
+          id: string
+          invoice_number: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          service_id: string
+          status: Database["public"]["Enums"]["invoice_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          client_service_id: string
+          company_id: string
+          created_at?: string
+          cycle_number: number
+          due_date: string
+          id?: string
+          invoice_number: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          service_id: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          client_service_id?: string
+          company_id?: string
+          created_at?: string
+          cycle_number?: number
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          service_id?: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_client_service_id_fkey"
+            columns: ["client_service_id"]
+            isOneToOne: false
+            referencedRelation: "client_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       plans: {
         Row: {
@@ -322,6 +528,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invoice_number: {
+        Args: { company_uuid: string }
+        Returns: string
+      }
       get_user_company_id: {
         Args: { _user_id: string }
         Returns: string
@@ -333,10 +543,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_overdue_invoices: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "superadmin" | "admin" | "gestor" | "financeiro" | "operador"
       billing_period: "monthly" | "semiannual" | "annual"
+      invoice_status: "pending" | "paid" | "canceled" | "overdue"
       plan_status: "active" | "inactive"
       service_status: "active" | "inactive" | "archived"
       service_type: "subscription" | "one_time" | "recurring"
@@ -475,6 +690,7 @@ export const Constants = {
     Enums: {
       app_role: ["superadmin", "admin", "gestor", "financeiro", "operador"],
       billing_period: ["monthly", "semiannual", "annual"],
+      invoice_status: ["pending", "paid", "canceled", "overdue"],
       plan_status: ["active", "inactive"],
       service_status: ["active", "inactive", "archived"],
       service_type: ["subscription", "one_time", "recurring"],
