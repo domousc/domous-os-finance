@@ -17,7 +17,7 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [hasGeneratedSalaries, setHasGeneratedSalaries] = useState(false);
 
-  const { data: paymentsGrouped, refetch } = useQuery({
+  const { data: paymentsGrouped, refetch, isLoading } = useQuery({
     queryKey: ["team-payments-grouped", period],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -94,7 +94,7 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Pagamentos</h2>
+        <h2 className="text-2xl font-bold">Pagamentos da Equipe</h2>
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Novo Pagamento
@@ -102,14 +102,22 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
       </div>
 
       <div className="space-y-4">
-        {paymentsGrouped?.map((group: any) => (
-          <MemberPaymentGroup
-            key={group.member.id}
-            member={group.member}
-            payments={group.payments}
-            onRefetch={refetch}
-          />
-        ))}
+        {isLoading ? (
+          <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+        ) : paymentsGrouped && paymentsGrouped.length > 0 ? (
+          paymentsGrouped.map((group: any) => (
+            <MemberPaymentGroup
+              key={group.member.id}
+              member={group.member}
+              payments={group.payments}
+              onRefetch={refetch}
+            />
+          ))
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            Nenhum pagamento encontrado para o período selecionado
+          </div>
+        )}
       </div>
 
       <TeamPaymentDialog
