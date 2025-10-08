@@ -1,4 +1,4 @@
-import { subDays, subMonths, subYears, differenceInDays, differenceInMonths, differenceInYears, eachMonthOfInterval, eachYearOfInterval } from "date-fns";
+import { subDays, subMonths, subYears, addDays, addMonths, addYears, differenceInDays, differenceInMonths, differenceInYears, eachMonthOfInterval, eachYearOfInterval } from "date-fns";
 import type { Period } from "@/components/shared/PeriodFilter";
 
 export interface DateRange {
@@ -6,6 +6,7 @@ export interface DateRange {
   end: Date | null;
 }
 
+// Para dados históricos (passado) - usado em Despesas
 export const calculateDateRange = (period: Period): DateRange => {
   const today = new Date();
   
@@ -24,6 +25,28 @@ export const calculateDateRange = (period: Period): DateRange => {
       return { start: null, end: null };
     default:
       return { start: subDays(today, 30), end: today };
+  }
+};
+
+// Para dados futuros (contas a pagar) - usado em À Pagar
+export const calculateFutureDateRange = (period: Period): DateRange => {
+  const today = new Date();
+  
+  switch (period) {
+    case "7d":
+      return { start: today, end: addDays(today, 7) };
+    case "30d":
+      return { start: today, end: addDays(today, 30) };
+    case "90d":
+      return { start: today, end: addDays(today, 90) };
+    case "6m":
+      return { start: today, end: addMonths(today, 6) };
+    case "1y":
+      return { start: today, end: addYears(today, 1) };
+    case "all":
+      return { start: null, end: null };
+    default:
+      return { start: today, end: addDays(today, 30) };
   }
 };
 

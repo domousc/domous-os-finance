@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Period } from "@/components/shared/PeriodFilter";
-import { calculateDateRange } from "@/lib/dateFilters";
+import { calculateFutureDateRange } from "@/lib/dateFilters";
 import { useAuth } from "@/contexts/AuthContext";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PayableItemRow } from "./PayableItemRow";
+import { ExpenseGroupRow } from "./ExpenseGroupRow";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface PayableItem {
   id: string;
-  type: "commission" | "expense";
+  type: "commission" | "expense" | "expense_group";
   description: string;
   amount: number;
   dueDate: Date;
@@ -33,6 +34,14 @@ export interface PayableItem {
   billingCycle?: string;
   category?: string;
   notes?: string;
+  
+  // Campos específicos de grupo de despesas parceladas
+  installmentGroupId?: string;
+  installments?: any[];
+  totalAmount?: number;
+  paidCount?: number;
+  pendingCount?: number;
+  overdueCount?: number;
 }
 
 interface PayableItemsTableProps {
@@ -40,7 +49,7 @@ interface PayableItemsTableProps {
 }
 
 export function PayableItemsTable({ period }: PayableItemsTableProps) {
-  const dateRange = calculateDateRange(period);
+  const dateRange = calculateFutureDateRange(period);
   const { user } = useAuth();
   const { toast } = useToast();
   const [items, setItems] = useState<PayableItem[]>([]);
@@ -156,8 +165,65 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
         },
       }));
 
-      // Converter despesas para PayableItem[]
-      const expenseItems: PayableItem[] = (expenses || []).map((expense) => ({
+      // Agrupar despesas por installment_group_id
+      const expensesGrouped = (expenses || []).reduce((acc: any, expense: any) => {
+        const groupId = expense.installment_group_id;
+        
+        if (groupId && expense.total_installments && expense.total_installments > 1) {
+          if (!acc.groups[groupId]) {
+            acc.groups[groupId] = {
+              installmentGroupId: groupId,
+              description: expense.description,
+              category: expense.category,
+              installments: [],
+              totalAmount: Number(expense.total_amount) || 0,
+              paidCount: 0,
+              pendingCount: 0,
+              overdueCount: 0,
+              nextDueDate: null,
+            };
+          }
+          
+          acc.groups[groupId].installments.push(expense);
+          
+          if (expense.status === "paid") acc.groups[groupId].paidCount++;
+          else if (expense.status === "pending") acc.groups[groupId].pendingCount++;
+          else if (expense.status === "overdue") acc.groups[groupId].overdueCount++;
+          
+          // Determinar próxima data de vencimento
+          if (expense.status !== "paid") {
+            const currentDue = new Date(expense.due_date);
+            if (!acc.groups[groupId].nextDueDate || currentDue < new Date(acc.groups[groupId].nextDueDate)) {
+              acc.groups[groupId].nextDueDate = expense.due_date;
+            }
+          }
+        } else {
+          // Despesas sem grupo ou com apenas 1 parcela
+          acc.single.push(expense);
+        }
+        
+        return acc;
+      }, { groups: {}, single: [] });
+
+      // Converter grupos de despesas para PayableItem[]
+      const expenseGroupItems: PayableItem[] = Object.values(expensesGrouped.groups).map((group: any) => ({
+        id: group.installmentGroupId,
+        type: "expense_group" as const,
+        description: group.description,
+        amount: group.totalAmount,
+        dueDate: new Date(group.nextDueDate || new Date()),
+        status: group.overdueCount > 0 ? "overdue" : (group.paidCount === group.installments.length ? "paid" : "pending"),
+        category: group.category,
+        installmentGroupId: group.installmentGroupId,
+        installments: group.installments,
+        totalAmount: group.totalAmount,
+        paidCount: group.paidCount,
+        pendingCount: group.pendingCount,
+        overdueCount: group.overdueCount,
+      }));
+
+      // Converter despesas individuais para PayableItem[]
+      const expenseItems: PayableItem[] = expensesGrouped.single.map((expense: any) => ({
         id: expense.id,
         type: "expense" as const,
         description: expense.description,
@@ -172,7 +238,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
       }));
 
       // Mesclar e ordenar por data de vencimento
-      const allItems = [...commissionItems, ...expenseItems].sort(
+      const allItems = [...commissionItems, ...expenseGroupItems, ...expenseItems].sort(
         (a, b) => a.dueDate.getTime() - b.dueDate.getTime()
       );
 
@@ -224,7 +290,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
   const filteredItems = items.filter((item) => {
     if (activeTab === "all") return true;
     if (activeTab === "commissions") return item.type === "commission";
-    if (activeTab === "expenses") return item.type === "expense";
+    if (activeTab === "expenses") return item.type === "expense" || item.type === "expense_group";
     return true;
   });
 
@@ -246,7 +312,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
           Comissões ({items.filter((i) => i.type === "commission").length})
         </TabsTrigger>
         <TabsTrigger value="expenses">
-          Despesas ({items.filter((i) => i.type === "expense").length})
+          Despesas ({items.filter((i) => i.type === "expense" || i.type === "expense_group").length})
         </TabsTrigger>
       </TabsList>
 
@@ -272,9 +338,26 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
                   </td>
                 </TableRow>
               ) : (
-                filteredItems.map((item) => (
-                  <PayableItemRow key={item.id} item={item} onUpdate={fetchPayableItems} />
-                ))
+                filteredItems.map((item) => 
+                  item.type === "expense_group" ? (
+                    <ExpenseGroupRow 
+                      key={item.id} 
+                      group={{
+                        installmentGroupId: item.installmentGroupId!,
+                        description: item.description,
+                        category: item.category || null,
+                        installments: item.installments || [],
+                        totalAmount: item.totalAmount || 0,
+                        paidCount: item.paidCount || 0,
+                        pendingCount: item.pendingCount || 0,
+                        overdueCount: item.overdueCount || 0,
+                        nextDueDate: item.dueDate.toISOString(),
+                      }}
+                    />
+                  ) : (
+                    <PayableItemRow key={item.id} item={item} onUpdate={fetchPayableItems} />
+                  )
+                )
               )}
             </TableBody>
           </Table>
