@@ -53,8 +53,8 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
     try {
       setLoading(true);
 
-      // Query 1: Buscar comissões pendentes cujas faturas foram pagas
-      const { data: commissions, error: commissionsError } = await supabase
+      // Query 1: Buscar comissões pendentes
+      let commissionsQuery = supabase
         .from("partner_commissions")
         .select(`
           id,
@@ -80,18 +80,34 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
             )
           )
         `)
-        .eq("status", "pending")
-        .eq("invoices.status", "paid");
-
-      if (commissionsError) throw commissionsError;
+        .eq("status", "pending");
 
       // Query 2: Buscar despesas pendentes/atrasadas
-      const { data: expenses, error: expensesError } = await supabase
+      let expensesQuery = supabase
         .from("company_expenses")
         .select("*")
         .in("status", ["pending", "overdue"])
         .order("due_date", { ascending: true });
 
+      if (dateRange.start && dateRange.end) {
+        commissionsQuery = commissionsQuery
+          .gte("scheduled_payment_date", dateRange.start.toISOString())
+          .lte("scheduled_payment_date", dateRange.end.toISOString());
+
+        expensesQuery = expensesQuery
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+      }
+
+      const [
+        { data: commissions, error: commissionsError },
+        { data: expenses, error: expensesError },
+      ] = await Promise.all([
+        commissionsQuery,
+        expensesQuery,
+      ]);
+
+      if (commissionsError) throw commissionsError;
       if (expensesError) throw expensesError;
 
       // Agrupar comissões por parceiro
@@ -175,8 +191,6 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
 
   useEffect(() => {
     fetchPayableItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
 
     // Real-time updates
     const channel = supabase
@@ -204,7 +218,8 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, period]);
 
   const filteredItems = items.filter((item) => {
     if (activeTab === "all") return true;
