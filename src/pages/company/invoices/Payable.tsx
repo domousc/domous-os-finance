@@ -4,7 +4,9 @@ import { companyMenuItems } from "@/config/companyMenuItems";
 import { PayableStats } from "@/components/company/invoices/payable/PayableStats";
 import { PayableHeader } from "@/components/company/invoices/payable/PayableHeader";
 import { PayableItemsTable } from "@/components/company/invoices/payable/PayableItemsTable";
+import { PersonPayableView } from "@/components/company/invoices/payable/PersonPayableView";
 import { PeriodFilter, type Period, type CustomDateRange } from "@/components/shared/PeriodFilter";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Payable() {
   const [period, setPeriod] = useState<Period>("30d");
@@ -21,7 +23,21 @@ export default function Payable() {
           onCustomRangeChange={setCustomRange}
         />
         <PayableStats period={period} />
-        <PayableItemsTable period={period} />
+        
+        <Tabs defaultValue="items" className="w-full">
+          <TabsList>
+            <TabsTrigger value="items">Por Item</TabsTrigger>
+            <TabsTrigger value="people">Por Pessoa</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="items" className="mt-6">
+            <PayableItemsTable period={period} />
+          </TabsContent>
+          
+          <TabsContent value="people" className="mt-6">
+            <PersonPayableView period={period} />
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );
