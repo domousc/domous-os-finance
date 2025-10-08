@@ -644,6 +644,95 @@ export type Database = {
           },
         ]
       }
+      payables: {
+        Row: {
+          amount: number
+          client_id: string | null
+          company_id: string
+          created_at: string | null
+          description: string
+          due_date: string
+          expense_category: string | null
+          id: string
+          notes: string | null
+          paid_date: string | null
+          partner_id: string | null
+          payment_method: string | null
+          reference_month: string | null
+          status: string
+          team_member_id: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          client_id?: string | null
+          company_id: string
+          created_at?: string | null
+          description: string
+          due_date: string
+          expense_category?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          partner_id?: string | null
+          payment_method?: string | null
+          reference_month?: string | null
+          status?: string
+          team_member_id?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          description?: string
+          due_date?: string
+          expense_category?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          partner_id?: string | null
+          payment_method?: string | null
+          reference_month?: string | null
+          status?: string
+          team_member_id?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payables_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payables_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payables_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payables_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personal_transactions: {
         Row: {
           amount: number

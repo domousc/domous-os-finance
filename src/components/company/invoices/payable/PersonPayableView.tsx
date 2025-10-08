@@ -7,15 +7,13 @@ import { Loader2 } from "lucide-react";
 import { calculateFutureDateRange } from "@/lib/dateFilters";
 import type { Period } from "@/components/shared/PeriodFilter";
 
-interface PayableItem {
+interface PersonPayableItem {
   id: string;
-  type: "commission" | "expense" | "team_payment";
+  type: "commission" | "team";
   description: string;
   amount: number;
   dueDate: Date;
   status: string;
-  paymentType?: string;
-  referenceMonth?: Date;
 }
 
 interface PersonPayableData {
@@ -23,7 +21,7 @@ interface PersonPayableData {
   personName: string;
   personType: "team_member" | "partner";
   totalAmount: number;
-  payments: PayableItem[];
+  payments: PersonPayableItem[];
   nextDueDate: Date;
 }
 
@@ -45,117 +43,69 @@ export function PersonPayableView({ period }: PersonPayableViewProps) {
     try {
       const dateRange = calculateFutureDateRange(period);
       
-      // Fetch team payments
-      let teamQuery = supabase
-        .from("team_payments")
+      let query = supabase
+        .from("payables")
         .select(`
           *,
-          team_members (
-            id,
-            name
-          )
+          team_members (id, name),
+          partners (id, name)
         `)
-        .eq("status", "pending");
+        .eq("status", "pending")
+        .in("type", ["team", "commission"]);
 
       if (period !== "all" && dateRange.start && dateRange.end) {
-        teamQuery = teamQuery
+        query = query
           .gte("due_date", dateRange.start.toISOString())
           .lte("due_date", dateRange.end.toISOString());
       }
 
-      const { data: teamPayments, error: teamError } = await teamQuery;
-      if (teamError) throw teamError;
-
-      // Fetch partner commissions
-      let commissionQuery = supabase
-        .from("partner_commissions")
-        .select(`
-          *,
-          partners (
-            id,
-            name
-          )
-        `)
-        .eq("status", "pending");
-
-      if (period !== "all" && dateRange.start && dateRange.end) {
-        commissionQuery = commissionQuery
-          .gte("scheduled_payment_date", dateRange.start.toISOString().split("T")[0])
-          .lte("scheduled_payment_date", dateRange.end.toISOString().split("T")[0]);
-      }
-
-      const { data: commissions, error: commissionError } = await commissionQuery;
-      if (commissionError) throw commissionError;
+      const { data, error } = await query;
+      if (error) throw error;
 
       // Group by person
       const personMap = new Map<string, PersonPayableData>();
 
-      // Process team payments
-      teamPayments?.forEach((payment: any) => {
-        const personId = payment.team_member_id;
-        const personName = payment.team_members?.name || "Membro Desconhecido";
-        
+      data?.forEach((item: any) => {
+        let personId: string;
+        let personName: string;
+        let personType: "team_member" | "partner";
+
+        if (item.type === "team" && item.team_member_id) {
+          personId = item.team_member_id;
+          personName = item.team_members?.name || "Membro Desconhecido";
+          personType = "team_member";
+        } else if (item.type === "commission" && item.partner_id) {
+          personId = item.partner_id;
+          personName = item.partners?.name || "Parceiro Desconhecido";
+          personType = "partner";
+        } else {
+          return;
+        }
+
         if (!personMap.has(personId)) {
           personMap.set(personId, {
             personId,
             personName,
-            personType: "team_member",
+            personType,
             totalAmount: 0,
             payments: [],
-            nextDueDate: new Date(payment.due_date),
+            nextDueDate: new Date(item.due_date),
           });
         }
 
         const person = personMap.get(personId)!;
-        const dueDate = new Date(payment.due_date);
+        const dueDate = new Date(item.due_date);
         
         person.payments.push({
-          id: payment.id,
-          type: "team_payment",
-          description: payment.description,
-          amount: payment.amount,
+          id: item.id,
+          type: item.type,
+          description: item.description,
+          amount: Number(item.amount),
           dueDate,
-          status: payment.status,
-          paymentType: payment.payment_type,
-          referenceMonth: payment.reference_month ? new Date(payment.reference_month) : undefined,
+          status: item.status,
         });
         
-        person.totalAmount += payment.amount;
-        if (dueDate < person.nextDueDate) {
-          person.nextDueDate = dueDate;
-        }
-      });
-
-      // Process partner commissions
-      commissions?.forEach((commission: any) => {
-        const personId = commission.partner_id;
-        const personName = commission.partners?.name || "Parceiro Desconhecido";
-        
-        if (!personMap.has(personId)) {
-          personMap.set(personId, {
-            personId,
-            personName,
-            personType: "partner",
-            totalAmount: 0,
-            payments: [],
-            nextDueDate: new Date(commission.scheduled_payment_date),
-          });
-        }
-
-        const person = personMap.get(personId)!;
-        const dueDate = new Date(commission.scheduled_payment_date);
-        
-        person.payments.push({
-          id: commission.id,
-          type: "commission",
-          description: commission.notes || `Comissão - ${commission.commission_percentage}%`,
-          amount: commission.commission_amount,
-          dueDate,
-          status: commission.status,
-          referenceMonth: commission.reference_month ? new Date(commission.reference_month) : undefined,
-        });
-        
-        person.totalAmount += commission.commission_amount;
+        person.totalAmount += Number(item.amount);
         if (dueDate < person.nextDueDate) {
           person.nextDueDate = dueDate;
         }
@@ -172,17 +122,11 @@ export function PersonPayableView({ period }: PersonPayableViewProps) {
   useEffect(() => {
     fetchPersonPayables();
 
-    // Setup realtime subscriptions
     const channel = supabase
       .channel("person-payables-changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "team_payments" },
-        () => fetchPersonPayables()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "partner_commissions" },
+        { event: "*", schema: "public", table: "payables" },
         () => fetchPersonPayables()
       )
       .subscribe();
@@ -192,7 +136,6 @@ export function PersonPayableView({ period }: PersonPayableViewProps) {
     };
   }, [user, period]);
 
-  // Filter and sort
   const filteredData = personData
     .filter((person) => personType === "all" || person.personType === personType)
     .sort((a, b) => {

@@ -20,22 +20,20 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-interface PayableItem {
+interface PersonPayableItem {
   id: string;
-  type: "commission" | "expense" | "team_payment";
+  type: "commission" | "team";
   description: string;
   amount: number;
   dueDate: Date;
   status: string;
-  paymentType?: string;
-  referenceMonth?: Date;
 }
 
 interface PersonPayableGroupProps {
   personId: string;
   personName: string;
   personType: "team_member" | "partner";
-  payments: PayableItem[];
+  payments: PersonPayableItem[];
   totalAmount: number;
   onUpdate: () => void;
 }
@@ -59,18 +57,10 @@ export function PersonPayableGroup({
     }).format(value);
   };
 
-  const getPaymentTypeBadge = (item: PayableItem) => {
-    if (item.type === "team_payment") {
-      const typeMap: Record<string, string> = {
-        salary: "Salário",
-        bonus: "Bonificação",
-        commission: "Comissão",
-        other: "Outro",
-      };
-      return typeMap[item.paymentType || "other"] || "Pagamento";
-    }
+  const getPaymentTypeBadge = (item: PersonPayableItem) => {
+    if (item.type === "team") return "Equipe";
     if (item.type === "commission") return "Comissão";
-    return "Despesa";
+    return "Pagamento";
   };
 
   const isOverdue = (dueDate: Date) => {
@@ -82,29 +72,13 @@ export function PersonPayableGroup({
     try {
       const now = new Date().toISOString();
 
-      // Separate payments by type
-      const teamPayments = payments.filter(p => p.type === "team_payment");
-      const commissions = payments.filter(p => p.type === "commission");
+      // Update all payables
+      const { error } = await supabase
+        .from("payables")
+        .update({ status: "paid", paid_date: now })
+        .in("id", payments.map(p => p.id));
 
-      // Update team payments
-      if (teamPayments.length > 0) {
-        const { error: teamError } = await supabase
-          .from("team_payments")
-          .update({ status: "paid", paid_date: now })
-          .in("id", teamPayments.map(p => p.id));
-
-        if (teamError) throw teamError;
-      }
-
-      // Update partner commissions
-      if (commissions.length > 0) {
-        const { error: commissionError } = await supabase
-          .from("partner_commissions")
-          .update({ status: "paid", paid_date: now })
-          .in("id", commissions.map(p => p.id));
-
-        if (commissionError) throw commissionError;
-      }
+      if (error) throw error;
 
       toast({
         title: "Pagamentos realizados",
@@ -175,11 +149,6 @@ export function PersonPayableGroup({
                     <Badge variant="outline">{getPaymentTypeBadge(payment)}</Badge>
                     <span className="font-medium">{payment.description}</span>
                   </div>
-                  {payment.referenceMonth && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Ref: {format(payment.referenceMonth, "MM/yyyy", { locale: ptBR })}
-                    </p>
-                  )}
                 </div>
                 <div className="text-right flex items-center gap-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
