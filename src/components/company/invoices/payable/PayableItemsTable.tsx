@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface PayableItem {
   id: string;
-  type: "commission" | "expense" | "expense_group";
+  type: "commission" | "expense" | "expense_group" | "team_payment";
   description: string;
   amount: number;
   dueDate: Date;
@@ -42,6 +42,13 @@ export interface PayableItem {
   paidCount?: number;
   pendingCount?: number;
   overdueCount?: number;
+  
+  // Campos específicos de pagamento de equipe
+  teamMemberId?: string;
+  teamMemberName?: string;
+  paymentType?: string;
+  referenceMonth?: string;
+  salarySnapshot?: number;
 }
 
 interface PayableItemsTableProps {
@@ -98,6 +105,16 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
         .in("status", ["pending", "overdue"])
         .order("due_date", { ascending: true });
 
+      // Query 3: Buscar pagamentos de equipe pendentes/atrasados
+      let teamPaymentsQuery = supabase
+        .from("team_payments")
+        .select(`
+          *,
+          team_member:team_members(id, name)
+        `)
+        .in("status", ["pending", "overdue"])
+        .order("due_date", { ascending: true });
+
       if (dateRange.start && dateRange.end) {
         commissionsQuery = commissionsQuery
           .gte("scheduled_payment_date", dateRange.start.toISOString())
@@ -106,18 +123,25 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
         expensesQuery = expensesQuery
           .gte("due_date", dateRange.start.toISOString())
           .lte("due_date", dateRange.end.toISOString());
+
+        teamPaymentsQuery = teamPaymentsQuery
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
       }
 
       const [
         { data: commissions, error: commissionsError },
         { data: expenses, error: expensesError },
+        { data: teamPayments, error: teamPaymentsError },
       ] = await Promise.all([
         commissionsQuery,
         expensesQuery,
+        teamPaymentsQuery,
       ]);
 
       if (commissionsError) throw commissionsError;
       if (expensesError) throw expensesError;
+      if (teamPaymentsError) throw teamPaymentsError;
 
       // Agrupar comissões por parceiro
       const commissionsGrouped = commissions?.reduce((acc: any, comm: any) => {
@@ -237,8 +261,25 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
         notes: expense.notes,
       }));
 
+      // Converter pagamentos de equipe para PayableItem[]
+      const teamPaymentItems: PayableItem[] = (teamPayments || []).map((payment: any) => ({
+        id: payment.id,
+        type: "team_payment" as const,
+        description: payment.description,
+        amount: Number(payment.amount),
+        dueDate: new Date(payment.due_date),
+        status: payment.status,
+        paymentMethod: payment.payment_method,
+        teamMemberId: payment.team_member?.id,
+        teamMemberName: payment.team_member?.name,
+        paymentType: payment.payment_type,
+        referenceMonth: payment.reference_month,
+        salarySnapshot: payment.salary_snapshot ? Number(payment.salary_snapshot) : undefined,
+        notes: payment.notes,
+      }));
+
       // Mesclar e ordenar por data de vencimento
-      const allItems = [...commissionItems, ...expenseGroupItems, ...expenseItems].sort(
+      const allItems = [...commissionItems, ...expenseGroupItems, ...expenseItems, ...teamPaymentItems].sort(
         (a, b) => a.dueDate.getTime() - b.dueDate.getTime()
       );
 
@@ -279,6 +320,15 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
         },
         () => fetchPayableItems()
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "team_payments",
+        },
+        () => fetchPayableItems()
+      )
       .subscribe();
 
     return () => {
@@ -291,6 +341,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
     if (activeTab === "all") return true;
     if (activeTab === "commissions") return item.type === "commission";
     if (activeTab === "expenses") return item.type === "expense" || item.type === "expense_group";
+    if (activeTab === "team") return item.type === "team_payment";
     return true;
   });
 
@@ -313,6 +364,9 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
         </TabsTrigger>
         <TabsTrigger value="expenses">
           Despesas ({items.filter((i) => i.type === "expense" || i.type === "expense_group").length})
+        </TabsTrigger>
+        <TabsTrigger value="team">
+          Equipe ({items.filter((i) => i.type === "team_payment").length})
         </TabsTrigger>
       </TabsList>
 

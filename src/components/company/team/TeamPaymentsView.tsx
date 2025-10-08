@@ -46,8 +46,10 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
         await supabase.rpc("generate_monthly_salaries");
       }
 
-      // Buscar todos os pagamentos (sem filtro de data) para garantir que apareçam
-      const { data: payments } = await supabase
+      // Buscar pagamentos com filtro de período
+      const dateFilter = calculateFutureDateRange(period);
+      
+      let paymentsQuery = supabase
         .from("team_payments")
         .select(`
           *,
@@ -55,6 +57,15 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
         `)
         .eq("company_id", profile.company_id)
         .order("due_date", { ascending: false });
+
+      // Aplicar filtro de data se não for "all"
+      if (period !== "all" && dateFilter.start && dateFilter.end) {
+        paymentsQuery = paymentsQuery
+          .gte("due_date", dateFilter.start.toISOString())
+          .lte("due_date", dateFilter.end.toISOString());
+      }
+
+      const { data: payments } = await paymentsQuery;
 
       // Agrupar por membro
       const grouped = payments?.reduce((acc: any, payment: any) => {

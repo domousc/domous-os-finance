@@ -39,6 +39,19 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
       return <Badge variant="default">Comissão</Badge>;
     }
     
+    if (item.type === "team_payment") {
+      const paymentTypeMap: Record<string, string> = {
+        salary: "Salário",
+        bonus: "Bonificação",
+        commission: "Comissão",
+        other: "Outro",
+      };
+      const displayText = item.paymentType 
+        ? paymentTypeMap[item.paymentType] || item.paymentType
+        : "Pagamento";
+      return <Badge variant="outline">{displayText}</Badge>;
+    }
+    
     const categoryMap: Record<string, string> = {
       subscription: "Assinatura",
       team: "Time",
@@ -60,6 +73,16 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
       if (item.type === "commission") {
         const { error } = await supabase
           .from("partner_commissions")
+          .update({
+            status: "paid",
+            paid_date: new Date().toISOString(),
+          })
+          .eq("id", item.id);
+
+        if (error) throw error;
+      } else if (item.type === "team_payment") {
+        const { error } = await supabase
+          .from("team_payments")
           .update({
             status: "paid",
             paid_date: new Date().toISOString(),
@@ -193,6 +216,62 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
                       </span>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {item.type === "team_payment" && (
+                <div className="space-y-2 text-sm">
+                  {item.teamMemberName && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">Membro:</span>
+                      <span>{item.teamMemberName}</span>
+                    </div>
+                  )}
+                  {item.paymentType && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">Tipo:</span>
+                      <Badge variant="outline">
+                        {item.paymentType === "salary" && "Salário"}
+                        {item.paymentType === "bonus" && "Bonificação"}
+                        {item.paymentType === "commission" && "Comissão"}
+                        {item.paymentType === "other" && "Outro"}
+                      </Badge>
+                    </div>
+                  )}
+                  {item.referenceMonth && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">Referência:</span>
+                      <span>
+                        {new Date(item.referenceMonth).toLocaleDateString('pt-BR', { 
+                          month: 'long', 
+                          year: 'numeric' 
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  {item.salarySnapshot && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">Salário base:</span>
+                      <span>
+                        {item.salarySnapshot.toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  {item.paymentMethod && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">Método de pagamento:</span>
+                      <span>{item.paymentMethod}</span>
+                    </div>
+                  )}
+                  {item.notes && (
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold">Notas:</span>
+                      <span className="text-muted-foreground">{item.notes}</span>
+                    </div>
+                  )}
                 </div>
               )}
 

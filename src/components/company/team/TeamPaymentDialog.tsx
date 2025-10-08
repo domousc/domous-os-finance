@@ -100,8 +100,22 @@ export const TeamPaymentDialog = ({ open, onClose, payment }: TeamPaymentDialogP
 
       // Gerar descrição automática se vazia
       const selectedMember = members?.find(m => m.id === data.team_member_id);
-      const autoDescription = data.description || 
-        `${data.payment_type === 'bonus' ? 'Bonificação' : data.payment_type === 'commission' ? 'Comissão' : 'Serviço'} - ${selectedMember?.name || ''}`;
+      const paymentTypeMap: Record<string, string> = {
+        salary: 'Salário',
+        bonus: 'Bonificação',
+        commission: 'Comissão',
+        other: 'Serviço',
+      };
+      
+      let autoDescription = data.description;
+      if (!autoDescription) {
+        const typeLabel = paymentTypeMap[data.payment_type] || 'Pagamento';
+        const memberName = selectedMember?.name || '';
+        const refMonth = data.reference_month 
+          ? ` (${new Date(data.reference_month).toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' })})`
+          : '';
+        autoDescription = `${typeLabel} - ${memberName}${refMonth}`;
+      }
       
       const paymentData: any = {
         team_member_id: data.team_member_id,
