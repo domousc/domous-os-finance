@@ -4,11 +4,22 @@ import type { Period } from "@/components/shared/PeriodFilter";
 import { calculateFutureDateRange } from "@/lib/dateFilters";
 import { useAuth } from "@/contexts/AuthContext";
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
-import { Loader2, Users, Receipt, HandCoins } from "lucide-react";
+import { Loader2, Users, Receipt, HandCoins, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export interface PayableItem {
   id: string;
@@ -153,6 +164,53 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
     }
   };
 
+  const handleDelete = async (item: PayableItem) => {
+    try {
+      // Delete from payables table
+      const { error: payablesError } = await supabase
+        .from("payables")
+        .delete()
+        .eq("id", item.id);
+
+      if (payablesError) throw payablesError;
+
+      // Delete from original table based on type
+      if (item.type === "team") {
+        const { error } = await supabase
+          .from("team_payments")
+          .delete()
+          .eq("id", item.id);
+        if (error) throw error;
+      } else if (item.type === "expense") {
+        const { error } = await supabase
+          .from("company_expenses")
+          .delete()
+          .eq("id", item.id);
+        if (error) throw error;
+      } else if (item.type === "commission") {
+        const { error } = await supabase
+          .from("partner_commissions")
+          .delete()
+          .eq("id", item.id);
+        if (error) throw error;
+      }
+      
+      toast({
+        title: "Item excluído",
+        description: "O item foi removido com sucesso.",
+      });
+      
+      fetchPayableItems();
+    } catch (error: any) {
+      console.error("Error deleting item:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o item.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -218,14 +276,44 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      {item.status === "pending" && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleMarkAsPaid(item.id)}
-                        >
-                          Marcar como pago
-                        </Button>
-                      )}
+                      <div className="flex justify-end gap-2">
+                        {item.status === "pending" && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleMarkAsPaid(item.id)}
+                          >
+                            Marcar como pago
+                          </Button>
+                        )}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita e o item será removido de todas as páginas.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(item)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
