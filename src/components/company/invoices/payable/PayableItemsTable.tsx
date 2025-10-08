@@ -322,8 +322,9 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12"></TableHead>
+                <TableHead className="w-12"></TableHead>
                 <TableHead>Descrição</TableHead>
-                <TableHead>Tipo</TableHead>
+                <TableHead>Categoria</TableHead>
                 <TableHead>Vencimento</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
@@ -333,7 +334,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
             <TableBody>
               {filteredItems.length === 0 ? (
                 <TableRow>
-                  <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
                     Nenhum item a pagar encontrado
                   </td>
                 </TableRow>

@@ -40,12 +40,13 @@ export function ExpenseInstallmentsDropdown({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12"></TableHead>
               <TableHead>Parcela</TableHead>
               <TableHead>Descrição</TableHead>
               <TableHead>Valor</TableHead>
               <TableHead>Vencimento</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead className="text-right">Pago em</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

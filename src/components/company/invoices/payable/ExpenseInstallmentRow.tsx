@@ -1,9 +1,9 @@
+import { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,6 +30,7 @@ export function ExpenseInstallmentRow({
   totalInstallments,
 }: ExpenseInstallmentRowProps) {
   const { toast } = useToast();
+  const [updating, setUpdating] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -46,6 +47,8 @@ export function ExpenseInstallmentRow({
 
   const handleMarkAsPaid = async () => {
     try {
+      setUpdating(true);
+      
       const { error } = await supabase
         .from("company_expenses")
         .update({
@@ -57,20 +60,33 @@ export function ExpenseInstallmentRow({
       if (error) throw error;
 
       toast({
-        title: "Despesa paga",
-        description: "A despesa foi marcada como paga com sucesso.",
+        title: "Parcela paga",
+        description: "A parcela foi marcada como paga com sucesso.",
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro ao atualizar despesa",
+        title: "Erro ao atualizar parcela",
         description: error.message,
       });
+    } finally {
+      setUpdating(false);
     }
   };
 
+  const isPaid = installment.status === "paid";
+
   return (
     <TableRow>
+      <TableCell>
+        <Checkbox
+          checked={isPaid}
+          disabled={isPaid || updating}
+          onCheckedChange={(checked) => {
+            if (checked) handleMarkAsPaid();
+          }}
+        />
+      </TableCell>
       <TableCell>
         {installment.current_installment || 1}/{totalInstallments}
       </TableCell>
@@ -81,21 +97,12 @@ export function ExpenseInstallmentRow({
       </TableCell>
       <TableCell>{getStatusBadge(installment.status)}</TableCell>
       <TableCell className="text-right">
-        {installment.status === "pending" || installment.status === "overdue" ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleMarkAsPaid}
-          >
-            <Check className="h-4 w-4 mr-1" />
-            Pagar
-          </Button>
-        ) : (
+        {installment.paid_date ? (
           <span className="text-sm text-muted-foreground">
-            {installment.paid_date
-              ? format(new Date(installment.paid_date), "dd/MM/yyyy", { locale: ptBR })
-              : "-"}
+            {format(new Date(installment.paid_date), "dd/MM/yyyy", { locale: ptBR })}
           </span>
+        ) : (
+          <span className="text-sm text-muted-foreground">-</span>
         )}
       </TableCell>
     </TableRow>

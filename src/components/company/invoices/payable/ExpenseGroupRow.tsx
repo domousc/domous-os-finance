@@ -2,8 +2,11 @@ import { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { ExpenseInstallmentsDropdown } from "./ExpenseInstallmentsDropdown";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Expense {
   id: string;
@@ -37,6 +40,8 @@ interface ExpenseGroupRowProps {
 
 export function ExpenseGroupRow({ group }: ExpenseGroupRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const { toast } = useToast();
 
   const getGeneralStatus = () => {
     if (group.overdueCount > 0) {
@@ -48,11 +53,63 @@ export function ExpenseGroupRow({ group }: ExpenseGroupRowProps) {
     return { label: "Em Dia", variant: "outline" as const };
   };
 
+  const handleMarkAllAsPaid = async () => {
+    try {
+      setUpdating(true);
+      
+      // Buscar IDs das parcelas pendentes/atrasadas
+      const pendingInstallments = group.installments.filter(
+        (inst) => inst.status === "pending" || inst.status === "overdue"
+      );
+
+      if (pendingInstallments.length === 0) {
+        toast({
+          title: "Nenhuma parcela pendente",
+          description: "Todas as parcelas já foram pagas.",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("company_expenses")
+        .update({
+          status: "paid",
+          paid_date: new Date().toISOString(),
+        })
+        .in("id", pendingInstallments.map((i) => i.id));
+
+      if (error) throw error;
+
+      toast({
+        title: "Parcelas marcadas como pagas",
+        description: `${pendingInstallments.length} parcela(s) atualizada(s) com sucesso.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar parcelas",
+        description: error.message,
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const status = getGeneralStatus();
+  const allPaid = group.paidCount === group.installments.length;
 
   return (
     <>
       <TableRow className="hover:bg-muted/50">
+        <TableCell>
+          <Checkbox
+            checked={allPaid}
+            disabled={allPaid || updating}
+            onCheckedChange={(checked) => {
+              if (checked) handleMarkAllAsPaid();
+            }}
+          />
+        </TableCell>
         <TableCell>
           <Button
             variant="ghost"
@@ -67,9 +124,7 @@ export function ExpenseGroupRow({ group }: ExpenseGroupRowProps) {
           </Button>
         </TableCell>
         <TableCell>
-          <Badge variant="secondary" className="mr-2">
-            Despesa
-          </Badge>
+          {group.category && <Badge variant="secondary">{group.category}</Badge>}
         </TableCell>
         <TableCell className="font-medium">
           {group.description}
@@ -95,7 +150,7 @@ export function ExpenseGroupRow({ group }: ExpenseGroupRowProps) {
       </TableRow>
       {isExpanded && (
         <TableRow>
-          <TableCell colSpan={6} className="p-0 bg-muted/20">
+          <TableCell colSpan={8} className="p-0 bg-muted/20">
             <ExpenseInstallmentsDropdown installments={group.installments} />
           </TableCell>
         </TableRow>

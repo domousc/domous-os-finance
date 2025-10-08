@@ -2,11 +2,14 @@ import { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight, MoreHorizontal } from "lucide-react";
 import { PayableItem } from "./PayableItemsTable";
 import { PayableItemDialog } from "./PayableItemDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface PayableItemRowProps {
   item: PayableItem;
@@ -16,6 +19,8 @@ interface PayableItemRowProps {
 export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const { toast } = useToast();
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -29,18 +34,83 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const getTypeBadge = (type: string) => {
-    if (type === "commission") {
-      return <Badge variant="default" className="bg-blue-500">Comissão</Badge>;
+  const getCategoryDisplay = () => {
+    if (item.type === "commission") {
+      return <Badge variant="default">Comissão</Badge>;
     }
-    return <Badge variant="default" className="bg-purple-500">Despesa</Badge>;
+    
+    if (item.category) {
+      return <Badge variant="secondary">{item.category}</Badge>;
+    }
+    
+    // Fallback para tipo se não houver categoria
+    const typeLabels: Record<string, string> = {
+      fixed: "Fixo",
+      variable: "Variável",
+      one_time: "Único",
+    };
+    
+    return <Badge variant="outline">{typeLabels[item.expenseType || ""] || "Despesa"}</Badge>;
+  };
+
+  const handleMarkAsPaid = async () => {
+    try {
+      setUpdating(true);
+      
+      if (item.type === "commission") {
+        const { error } = await supabase
+          .from("partner_commissions")
+          .update({
+            status: "paid",
+            paid_date: new Date().toISOString(),
+          })
+          .eq("id", item.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("company_expenses")
+          .update({
+            status: "paid",
+            paid_date: new Date().toISOString(),
+          })
+          .eq("id", item.id);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Marcado como pago",
+        description: "O item foi atualizado com sucesso.",
+      });
+
+      onUpdate();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar",
+        description: error.message,
+      });
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const isOverdue = item.status === "pending" && new Date(item.dueDate) < new Date();
+  const isPaid = item.status === "paid";
 
   return (
     <>
       <TableRow className={isOverdue ? "bg-red-50 dark:bg-red-950/20" : ""}>
+        <TableCell>
+          <Checkbox
+            checked={isPaid}
+            disabled={isPaid || updating}
+            onCheckedChange={(checked) => {
+              if (checked) handleMarkAsPaid();
+            }}
+          />
+        </TableCell>
         <TableCell>
           <Button
             variant="ghost"
@@ -52,7 +122,7 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
           </Button>
         </TableCell>
         <TableCell className="font-medium">{item.description}</TableCell>
-        <TableCell>{getTypeBadge(item.type)}</TableCell>
+        <TableCell>{getCategoryDisplay()}</TableCell>
         <TableCell>
           {format(item.dueDate, "dd/MM/yyyy", { locale: ptBR })}
         </TableCell>
@@ -77,7 +147,7 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
 
       {expanded && (
         <TableRow className={isOverdue ? "bg-red-50 dark:bg-red-950/20" : ""}>
-          <TableCell colSpan={7} className="bg-muted/50">
+          <TableCell colSpan={8} className="bg-muted/50">
             <div className="py-4 px-6 space-y-3">
               {item.type === "commission" && item.commissionDetails && (
                 <div className="space-y-2">
