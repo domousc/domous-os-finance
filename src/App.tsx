@@ -30,6 +30,7 @@ import PersonalFinance from "./pages/company/PersonalFinance";
 import Dashboard from "./pages/company/Dashboard";
 import FinanceOverview from "./pages/company/FinanceOverview";
 import Expenses from "./pages/company/Expenses";
+import Team from "./pages/company/Team";
 import SubscriptionExpired from "./pages/company/SubscriptionExpired";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
@@ -187,6 +188,16 @@ const App = () => (
                   <ProtectedRoute>
                     <CompanyRoute>
                       <Expenses />
+                    </CompanyRoute>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/finance/team"
+                element={
+                  <ProtectedRoute>
+                    <CompanyRoute>
+                      <Team />
                     </CompanyRoute>
                   </ProtectedRoute>
                 }

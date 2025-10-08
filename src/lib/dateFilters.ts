@@ -1,10 +1,20 @@
 import { subDays, subMonths, subYears, addDays, addMonths, addYears, differenceInDays, differenceInMonths, differenceInYears, eachMonthOfInterval, eachYearOfInterval } from "date-fns";
 import type { Period } from "@/components/shared/PeriodFilter";
 
+export type { Period };
+
 export interface DateRange {
   start: Date | null;
   end: Date | null;
 }
+
+export const getDateRangeFilter = (period: Period): { start: string; end: string } => {
+  const range = calculateDateRange(period);
+  return {
+    start: range.start?.toISOString() || new Date(0).toISOString(),
+    end: range.end?.toISOString() || new Date().toISOString(),
+  };
+};
 
 // Para dados históricos (passado) - usado em Despesas
 export const calculateDateRange = (period: Period): DateRange => {

@@ -888,6 +888,125 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          bank_account: string | null
+          bank_agency: string | null
+          bank_name: string | null
+          company_id: string
+          cpf: string | null
+          created_at: string
+          email: string | null
+          employment_type: Database["public"]["Enums"]["employment_type"]
+          id: string
+          monthly_salary: number | null
+          name: string
+          notes: string | null
+          phone: string | null
+          pix_key: string | null
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
+          company_id: string
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          id?: string
+          monthly_salary?: number | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          pix_key?: string | null
+          role: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
+          company_id?: string
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          id?: string
+          monthly_salary?: number | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          pix_key?: string | null
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      team_payments: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string
+          description: string
+          due_date: string
+          id: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          payment_type: string
+          reference_month: string
+          status: string
+          team_member_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          company_id: string
+          created_at?: string
+          description: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_type?: string
+          reference_month: string
+          status?: string
+          team_member_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string
+          description?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_type?: string
+          reference_month?: string
+          status?: string
+          team_member_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_payments_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           company_id: string | null
@@ -933,6 +1052,10 @@ export type Database = {
         Args: { company_uuid: string }
         Returns: string
       }
+      generate_monthly_salaries: {
+        Args: { ref_month?: string }
+        Returns: number
+      }
       get_user_company_id: {
         Args: { _user_id: string }
         Returns: string
@@ -960,6 +1083,7 @@ export type Database = {
     Enums: {
       app_role: "superadmin" | "admin" | "gestor" | "financeiro" | "operador"
       billing_period: "monthly" | "semiannual" | "annual"
+      employment_type: "fixed" | "variable"
       expense_billing_cycle: "monthly" | "annual" | "one_time"
       expense_type:
         | "subscription"
@@ -1110,6 +1234,7 @@ export const Constants = {
     Enums: {
       app_role: ["superadmin", "admin", "gestor", "financeiro", "operador"],
       billing_period: ["monthly", "semiannual", "annual"],
+      employment_type: ["fixed", "variable"],
       expense_billing_cycle: ["monthly", "annual", "one_time"],
       expense_type: [
         "subscription",

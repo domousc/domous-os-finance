@@ -47,6 +47,11 @@ export const companyMenuItems: MenuItem[] = [
         label: "Despesas Operacionais",
         path: "/dashboard/finance/expenses",
       },
+      {
+        icon: Users,
+        label: "Time",
+        path: "/dashboard/finance/team",
+      },
     ],
   },
   {
