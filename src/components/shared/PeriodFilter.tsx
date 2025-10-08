@@ -87,7 +87,7 @@ export const PeriodFilter = ({
             mode="range"
             selected={date}
             onSelect={handleDateSelect}
-            numberOfMonths={2}
+            numberOfMonths={1}
             initialFocus
             className={cn("p-3 pointer-events-auto")}
           />

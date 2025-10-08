@@ -86,8 +86,7 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
                   <SelectItem value="subscription">Assinatura</SelectItem>
                   <SelectItem value="service">Serviço</SelectItem>
                   <SelectItem value="infrastructure">Infraestrutura</SelectItem>
-                  <SelectItem value="marketing">Marketing</SelectItem>
-                  <SelectItem value="team">Equipe</SelectItem>
+                  <SelectItem value="others">Outros</SelectItem>
                   <SelectItem value="one_time">Pontual</SelectItem>
                 </SelectContent>
               </Select>

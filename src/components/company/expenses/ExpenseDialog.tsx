@@ -42,7 +42,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 
 const expenseSchema = z.object({
-  type: z.enum(["subscription", "service", "infrastructure", "marketing", "team", "one_time"]),
+  type: z.enum(["subscription", "service", "infrastructure", "others", "one_time"]),
   category: z.string().optional(),
   description: z.string().min(1, "Descrição é obrigatória"),
   amount: z.string().min(1, "Valor é obrigatório"),
@@ -258,8 +258,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
                         <SelectItem value="subscription">Assinatura</SelectItem>
                         <SelectItem value="service">Serviço</SelectItem>
                         <SelectItem value="infrastructure">Infraestrutura</SelectItem>
-                        <SelectItem value="marketing">Marketing</SelectItem>
-                        <SelectItem value="team">Equipe</SelectItem>
+                        <SelectItem value="others">Outros</SelectItem>
                         <SelectItem value="one_time">Pontual</SelectItem>
                       </SelectContent>
                     </Select>
