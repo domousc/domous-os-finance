@@ -5,18 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { MemberPaymentGroup } from "./MemberPaymentGroup";
 import { TeamPaymentDialog } from "./TeamPaymentDialog";
-import { Period, calculateFutureDateRange } from "@/lib/dateFilters";
 
-interface TeamPaymentsViewProps {
-  period: Period;
-}
-
-export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
+export const TeamPaymentsView = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
 
   const { data: paymentsGrouped, refetch } = useQuery({
-    queryKey: ["team-payments-grouped", period],
+    queryKey: ["team-payments-grouped"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
@@ -46,10 +41,8 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
         await supabase.rpc("generate_monthly_salaries");
       }
 
-      // Buscar pagamentos com filtro de período
-      const dateFilter = calculateFutureDateRange(period);
-      
-      let paymentsQuery = supabase
+      // Buscar todos os pagamentos
+      const { data: payments } = await supabase
         .from("team_payments")
         .select(`
           *,
@@ -57,15 +50,6 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
         `)
         .eq("company_id", profile.company_id)
         .order("due_date", { ascending: false });
-
-      // Aplicar filtro de data se não for "all"
-      if (period !== "all" && dateFilter.start && dateFilter.end) {
-        paymentsQuery = paymentsQuery
-          .gte("due_date", dateFilter.start.toISOString())
-          .lte("due_date", dateFilter.end.toISOString());
-      }
-
-      const { data: payments } = await paymentsQuery;
 
       // Agrupar por membro
       const grouped = payments?.reduce((acc: any, payment: any) => {

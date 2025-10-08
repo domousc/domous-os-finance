@@ -2,15 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { DollarSign, TrendingUp, CheckCircle, Clock } from "lucide-react";
-import { Period, getDateRangeFilter } from "@/lib/dateFilters";
 
-interface TeamStatsProps {
-  period: Period;
-}
-
-export const TeamStats = ({ period }: TeamStatsProps) => {
+export const TeamStats = () => {
   const { data: stats } = useQuery({
-    queryKey: ["team-stats", period],
+    queryKey: ["team-stats"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
@@ -23,15 +18,11 @@ export const TeamStats = ({ period }: TeamStatsProps) => {
 
       if (!profile?.company_id) throw new Error("No company");
 
-      const dateFilter = getDateRangeFilter(period);
-
-      // Buscar todos os pagamentos do período
+      // Buscar todos os pagamentos
       const { data: payments } = await supabase
         .from("team_payments")
         .select("*")
-        .eq("company_id", profile.company_id)
-        .gte("due_date", dateFilter.start)
-        .lte("due_date", dateFilter.end);
+        .eq("company_id", profile.company_id);
 
       const monthlyTotal = payments
         ?.filter(p => p.payment_type === 'salary')

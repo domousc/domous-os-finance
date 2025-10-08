@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { AppLayout } from "@/components/shared/AppLayout";
 import { companyMenuItems } from "@/config/companyMenuItems";
 import { TeamHeader } from "@/components/company/team/TeamHeader";
@@ -7,10 +6,8 @@ import { TeamMembersTable } from "@/components/company/team/TeamMembersTable";
 import { TeamPaymentsView } from "@/components/company/team/TeamPaymentsView";
 import { CompanySettings } from "@/components/company/team/CompanySettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PeriodFilter, type Period } from "@/components/shared/PeriodFilter";
 
 const Team = () => {
-  const [period, setPeriod] = useState<Period>("30d");
 
   return (
     <AppLayout
@@ -19,12 +16,9 @@ const Team = () => {
       headerBadge="Gestão de Equipe"
     >
       <div className="space-y-6">
-        <div className="flex items-start justify-between">
-          <TeamHeader />
-          <PeriodFilter period={period} onPeriodChange={setPeriod} />
-        </div>
+        <TeamHeader />
         
-        <TeamStats period={period} />
+        <TeamStats />
         
         <Tabs defaultValue="payments" className="w-full">
           <TabsList>
@@ -34,7 +28,7 @@ const Team = () => {
           </TabsList>
           
           <TabsContent value="payments" className="mt-6">
-            <TeamPaymentsView period={period} />
+            <TeamPaymentsView />
           </TabsContent>
           
           <TabsContent value="members" className="mt-6">
