@@ -10,33 +10,55 @@ export function PayableStats() {
   const { data: stats } = useQuery({
     queryKey: ["payable-stats", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar comissões
+      const { data: commissions, error: commissionsError } = await supabase
         .from("partner_commissions")
         .select("status, commission_amount");
 
-      if (error) throw error;
+      if (commissionsError) throw commissionsError;
 
-      const pending = data
+      // Buscar despesas operacionais
+      const { data: expenses, error: expensesError } = await supabase
+        .from("company_expenses")
+        .select("status, amount, due_date");
+
+      if (expensesError) throw expensesError;
+
+      const commissionsPending = commissions
         .filter((c) => c.status === "pending")
         .reduce((sum, c) => sum + Number(c.commission_amount), 0);
 
-      const paid = data
+      const commissionsPaid = commissions
         .filter((c) => c.status === "paid")
         .reduce((sum, c) => sum + Number(c.commission_amount), 0);
 
-      const cancelled = data
-        .filter((c) => c.status === "cancelled")
-        .reduce((sum, c) => sum + Number(c.commission_amount), 0);
+      const expensesPending = expenses
+        .filter((e) => e.status === "pending" || e.status === "overdue")
+        .reduce((sum, e) => sum + Number(e.amount), 0);
 
-      const total = data.reduce((sum, c) => sum + Number(c.commission_amount), 0);
+      const today = new Date();
+      const next30Days = new Date();
+      next30Days.setDate(today.getDate() + 30);
+
+      const dueNext30 = expenses
+        .filter((e) => {
+          const dueDate = new Date(e.due_date);
+          return (
+            (e.status === "pending" || e.status === "overdue") &&
+            dueDate >= today &&
+            dueDate <= next30Days
+          );
+        })
+        .reduce((sum, e) => sum + Number(e.amount), 0) + commissionsPending;
 
       return {
-        total,
-        pending,
-        paid,
-        cancelled,
-        pendingCount: data.filter((c) => c.status === "pending").length,
-        paidCount: data.filter((c) => c.status === "paid").length,
+        total: commissionsPending + expensesPending,
+        commissionsPending,
+        expensesPending,
+        commissionsPaid,
+        dueNext30,
+        pendingCount: commissions.filter((c) => c.status === "pending").length,
+        expensesCount: expenses.filter((e) => e.status === "pending" || e.status === "overdue").length,
       };
     },
     enabled: !!user,
@@ -57,52 +79,52 @@ export function PayableStats() {
             {formatCurrency(stats?.total || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Total de comissões geradas
+            Comissões + despesas pendentes
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-          <AlertCircle className="h-4 w-4 text-yellow-500" />
+          <CardTitle className="text-sm font-medium">Comissões</CardTitle>
+          <AlertCircle className="h-4 w-4 text-blue-500" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(stats?.pending || 0)}
+            {formatCurrency(stats?.commissionsPending || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
-            {stats?.pendingCount || 0} comissões pendentes
+            {stats?.pendingCount || 0} pendentes
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Pagas</CardTitle>
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <CardTitle className="text-sm font-medium">Despesas</CardTitle>
+          <CheckCircle2 className="h-4 w-4 text-purple-500" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(stats?.paid || 0)}
+            {formatCurrency(stats?.expensesPending || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
-            {stats?.paidCount || 0} comissões pagas
+            {stats?.expensesCount || 0} pendentes
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Canceladas</CardTitle>
-          <XCircle className="h-4 w-4 text-red-500" />
+          <CardTitle className="text-sm font-medium">Próximos 30 Dias</CardTitle>
+          <XCircle className="h-4 w-4 text-orange-500" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(stats?.cancelled || 0)}
+            {formatCurrency(stats?.dueNext30 || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Comissões canceladas
+            Vencendo em breve
           </p>
         </CardContent>
       </Card>

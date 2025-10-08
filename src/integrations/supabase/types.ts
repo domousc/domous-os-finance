@@ -469,6 +469,7 @@ export type Database = {
           partner_id: string
           payment_method: string | null
           reference_month: string
+          scheduled_payment_date: string | null
           status: string
           updated_at: string
         }
@@ -488,6 +489,7 @@ export type Database = {
           partner_id: string
           payment_method?: string | null
           reference_month: string
+          scheduled_payment_date?: string | null
           status?: string
           updated_at?: string
         }
@@ -507,6 +509,7 @@ export type Database = {
           partner_id?: string
           payment_method?: string | null
           reference_month?: string
+          scheduled_payment_date?: string | null
           status?: string
           updated_at?: string
         }
@@ -922,6 +925,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_commission_payment_date: {
+        Args: { ref_month: string }
+        Returns: string
+      }
       generate_invoice_number: {
         Args: { company_uuid: string }
         Returns: string
