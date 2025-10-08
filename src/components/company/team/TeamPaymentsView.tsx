@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { MemberPaymentGroup } from "./MemberPaymentGroup";
 import { TeamPaymentDialog } from "./TeamPaymentDialog";
-import { Period, getDateRangeFilter } from "@/lib/dateFilters";
+import { Period, calculateFutureDateRange } from "@/lib/dateFilters";
 
 interface TeamPaymentsViewProps {
   period: Period;
@@ -46,8 +46,7 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
         await supabase.rpc("generate_monthly_salaries");
       }
 
-      const dateFilter = getDateRangeFilter(period);
-
+      // Buscar todos os pagamentos (sem filtro de data) para garantir que apareçam
       const { data: payments } = await supabase
         .from("team_payments")
         .select(`
@@ -55,8 +54,6 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
           team_member:team_members(*)
         `)
         .eq("company_id", profile.company_id)
-        .gte("due_date", dateFilter.start)
-        .lte("due_date", dateFilter.end)
         .order("due_date", { ascending: false });
 
       // Agrupar por membro
@@ -93,14 +90,20 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
       </div>
 
       <div className="space-y-4">
-        {paymentsGrouped?.map((group: any) => (
-          <MemberPaymentGroup
-            key={group.member.id}
-            member={group.member}
-            payments={group.payments}
-            onRefetch={refetch}
-          />
-        ))}
+        {!paymentsGrouped || paymentsGrouped.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Nenhum pagamento encontrado. Adicione um novo pagamento para começar.
+          </div>
+        ) : (
+          paymentsGrouped.map((group: any) => (
+            <MemberPaymentGroup
+              key={group.member.id}
+              member={group.member}
+              payments={group.payments}
+              onRefetch={refetch}
+            />
+          ))
+        )}
       </div>
 
       <TeamPaymentDialog

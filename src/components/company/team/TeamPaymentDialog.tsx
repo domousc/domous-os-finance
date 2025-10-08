@@ -98,10 +98,15 @@ export const TeamPaymentDialog = ({ open, onClose, payment }: TeamPaymentDialogP
 
       if (!profile?.company_id) throw new Error("No company");
 
+      // Gerar descrição automática se vazia
+      const selectedMember = members?.find(m => m.id === data.team_member_id);
+      const autoDescription = data.description || 
+        `${data.payment_type === 'bonus' ? 'Bonificação' : data.payment_type === 'commission' ? 'Comissão' : 'Serviço'} - ${selectedMember?.name || ''}`;
+      
       const paymentData: any = {
         team_member_id: data.team_member_id,
         payment_type: data.payment_type,
-        description: data.description || null,
+        description: autoDescription,
         reference_month: data.reference_month || null,
         notes: data.notes || null,
         company_id: profile.company_id,
