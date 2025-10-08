@@ -18,20 +18,33 @@ import {
 } from "@/components/ui/select";
 import { ExpenseRow } from "./ExpenseRow";
 import { ExpenseDialog } from "./ExpenseDialog";
+import type { Period } from "@/components/shared/PeriodFilter";
+import { calculateDateRange } from "@/lib/dateFilters";
 
-export const ExpensesTable = () => {
+interface ExpensesTableProps {
+  period: Period;
+}
+
+export const ExpensesTable = ({ period }: ExpensesTableProps) => {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const dateRange = calculateDateRange(period);
 
   const { data: expenses, isLoading } = useQuery({
-    queryKey: ["company-expenses", typeFilter, statusFilter],
+    queryKey: ["company-expenses", typeFilter, statusFilter, period],
     queryFn: async () => {
       let query = supabase
         .from("company_expenses")
         .select("*")
         .order("due_date", { ascending: true });
+
+      if (dateRange.start && dateRange.end) {
+        query = query
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+      }
 
       if (typeFilter !== "all") {
         query = query.eq("type", typeFilter as any);

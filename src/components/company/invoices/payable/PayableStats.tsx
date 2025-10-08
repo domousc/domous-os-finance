@@ -3,25 +3,43 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import type { Period } from "@/components/shared/PeriodFilter";
+import { calculateDateRange, calculateComparisonRange, countRecurrenceInPeriod, formatComparison } from "@/lib/dateFilters";
 
-export function PayableStats() {
+interface PayableStatsProps {
+  period: Period;
+}
+
+export function PayableStats({ period }: PayableStatsProps) {
   const { user } = useAuth();
+  const dateRange = calculateDateRange(period);
+  const comparisonRange = calculateComparisonRange(period);
 
   const { data: stats } = useQuery({
-    queryKey: ["payable-stats", user?.id],
+    queryKey: ["payable-stats", user?.id, period],
     queryFn: async () => {
-      // Buscar comissões
-      const { data: commissions, error: commissionsError } = await supabase
+      let commissionsQuery = supabase
         .from("partner_commissions")
-        .select("status, commission_amount");
+        .select("status, commission_amount, scheduled_payment_date");
+
+      let expensesQuery = supabase
+        .from("company_expenses")
+        .select("status, amount, due_date, billing_cycle");
+
+      if (dateRange.start && dateRange.end) {
+        commissionsQuery = commissionsQuery
+          .gte("scheduled_payment_date", dateRange.start.toISOString())
+          .lte("scheduled_payment_date", dateRange.end.toISOString());
+
+        expensesQuery = expensesQuery
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+      }
+
+      const { data: commissions, error: commissionsError } = await commissionsQuery;
+      const { data: expenses, error: expensesError } = await expensesQuery;
 
       if (commissionsError) throw commissionsError;
-
-      // Buscar despesas operacionais
-      const { data: expenses, error: expensesError } = await supabase
-        .from("company_expenses")
-        .select("status, amount, due_date");
-
       if (expensesError) throw expensesError;
 
       const commissionsPending = commissions
@@ -34,7 +52,10 @@ export function PayableStats() {
 
       const expensesPending = expenses
         .filter((e) => e.status === "pending" || e.status === "overdue")
-        .reduce((sum, e) => sum + Number(e.amount), 0);
+        .reduce((sum, e) => {
+          const count = countRecurrenceInPeriod(e.billing_cycle, dateRange.start, dateRange.end);
+          return sum + Number(e.amount) * count;
+        }, 0);
 
       const today = new Date();
       const next30Days = new Date();

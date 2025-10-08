@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Period } from "@/components/shared/PeriodFilter";
+import { calculateDateRange } from "@/lib/dateFilters";
 import { useAuth } from "@/contexts/AuthContext";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PayableItemRow } from "./PayableItemRow";
@@ -33,7 +35,12 @@ export interface PayableItem {
   notes?: string;
 }
 
-export function PayableItemsTable() {
+interface PayableItemsTableProps {
+  period: Period;
+}
+
+export function PayableItemsTable({ period }: PayableItemsTableProps) {
+  const dateRange = calculateDateRange(period);
   const { user } = useAuth();
   const { toast } = useToast();
   const [items, setItems] = useState<PayableItem[]>([]);
@@ -168,6 +175,8 @@ export function PayableItemsTable() {
 
   useEffect(() => {
     fetchPayableItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period]);
 
     // Real-time updates
     const channel = supabase

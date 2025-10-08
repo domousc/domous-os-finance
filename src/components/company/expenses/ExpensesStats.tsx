@@ -1,95 +1,184 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreditCard, TrendingUp, AlertCircle, Calendar } from "lucide-react";
+import { DollarSign, AlertCircle, Calendar, RefreshCw } from "lucide-react";
+import type { Period } from "@/components/shared/PeriodFilter";
+import { calculateDateRange, calculateComparisonRange, countRecurrenceInPeriod, formatComparison } from "@/lib/dateFilters";
 
-export const ExpensesStats = () => {
-  const { data: expenses } = useQuery({
-    queryKey: ["company-expenses"],
+interface ExpensesStatsProps {
+  period: Period;
+}
+
+export function ExpensesStats({ period }: ExpensesStatsProps) {
+  const { user } = useAuth();
+  const dateRange = calculateDateRange(period);
+  const comparisonRange = calculateComparisonRange(period);
+
+  const { data: currentStats } = useQuery({
+    queryKey: ["expenses-stats", user?.id, period],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("company_expenses")
-        .select("*");
-      
+        .select("status, amount, billing_cycle, due_date, type");
+
+      if (dateRange.start && dateRange.end) {
+        query = query
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+      }
+
+      const { data: expenses, error } = await query;
       if (error) throw error;
-      return data || [];
+
+      const totalPending = expenses
+        .filter((e) => e.status === "pending")
+        .reduce((sum, e) => {
+          const count = countRecurrenceInPeriod(e.billing_cycle, dateRange.start, dateRange.end);
+          return sum + Number(e.amount) * count;
+        }, 0);
+
+      const totalOverdue = expenses
+        .filter((e) => e.status === "overdue")
+        .reduce((sum, e) => {
+          const count = countRecurrenceInPeriod(e.billing_cycle, dateRange.start, dateRange.end);
+          return sum + Number(e.amount) * count;
+        }, 0);
+
+      const monthlyRecurring = expenses
+        .filter((e) => e.billing_cycle === "monthly" && e.status !== "paid" && e.status !== "cancelled")
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+
+      const activeSubscriptions = expenses
+        .filter(
+          (e) =>
+            (e.billing_cycle === "monthly" || e.billing_cycle === "annual") &&
+            e.status !== "paid" &&
+            e.status !== "cancelled"
+        )
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+
+      return {
+        totalPending,
+        totalOverdue,
+        monthlyRecurring,
+        activeSubscriptions,
+      };
     },
+    enabled: !!user,
   });
 
-  const totalPending = expenses
-    ?.filter((e) => e.status === "pending")
-    .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+  const { data: previousStats } = useQuery({
+    queryKey: ["expenses-stats-comparison", user?.id, period],
+    queryFn: async () => {
+      if (!comparisonRange.start || !comparisonRange.end) return null;
 
-  const totalOverdue = expenses
-    ?.filter((e) => e.status === "overdue")
-    .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+      const { data: expenses, error } = await supabase
+        .from("company_expenses")
+        .select("status, amount, billing_cycle, due_date")
+        .gte("due_date", comparisonRange.start.toISOString())
+        .lte("due_date", comparisonRange.end.toISOString());
 
-  // Recorrência Mensal - soma o valor mensal de todas as despesas recorrentes mensais ativas
-  const monthlyRecurring = expenses
-    ?.filter((e) => e.billing_cycle === "monthly" && e.status !== "paid")
-    .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+      if (error) throw error;
 
-  // Assinaturas Ativas - total de todas as despesas recorrentes (mensal ou anual) que estão ativas
-  const activeSubscriptions = expenses
-    ?.filter((e) => e.billing_cycle !== "one_time" && e.status !== "paid" && e.status !== "cancelled")
-    .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+      const totalPending = expenses
+        .filter((e) => e.status === "pending")
+        .reduce((sum, e) => {
+          const count = countRecurrenceInPeriod(e.billing_cycle, comparisonRange.start, comparisonRange.end);
+          return sum + Number(e.amount) * count;
+        }, 0);
 
-  // Próximos 30 dias - despesas pendentes que vencem nos próximos 30 dias
-  const next30Days = expenses
-    ?.filter((e) => {
-      const dueDate = new Date(e.due_date);
-      const today = new Date();
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(today.getDate() + 30);
-      return dueDate >= today && dueDate <= thirtyDaysFromNow && (e.status === "pending" || e.status === "overdue");
-    })
-    .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+      const totalOverdue = expenses
+        .filter((e) => e.status === "overdue")
+        .reduce((sum, e) => {
+          const count = countRecurrenceInPeriod(e.billing_cycle, comparisonRange.start, comparisonRange.end);
+          return sum + Number(e.amount) * count;
+        }, 0);
 
-  const statCards = [
-    {
-      title: "Total Pendente",
-      value: totalPending,
-      icon: CreditCard,
-      color: "text-blue-600",
+      return { totalPending, totalOverdue };
     },
-    {
-      title: "Em Atraso",
-      value: totalOverdue,
-      icon: AlertCircle,
-      color: "text-red-600",
-    },
-    {
-      title: "Recorrência Mensal",
-      value: monthlyRecurring,
-      icon: TrendingUp,
-      color: "text-purple-600",
-    },
-    {
-      title: "Assinaturas Ativas",
-      value: activeSubscriptions,
-      icon: TrendingUp,
-      color: "text-green-600",
-    },
-  ];
+    enabled: !!user && !!comparisonRange.start,
+  });
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+
+  const pendingComparison = formatComparison(
+    currentStats?.totalPending || 0,
+    previousStats?.totalPending || 0,
+    true
+  );
+
+  const overdueComparison = formatComparison(
+    currentStats?.totalOverdue || 0,
+    previousStats?.totalOverdue || 0,
+    true
+  );
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {statCards.map((stat) => (
-        <Card key={stat.title}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-            <stat.icon className={`h-4 w-4 ${stat.color}`} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(stat.value)}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatCurrency(currentStats?.totalPending || 0)}
+          </div>
+          {period !== "all" && (
+            <p className={`text-xs ${pendingComparison.color} mt-1`}>
+              {pendingComparison.text}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
+          <AlertCircle className="h-4 w-4 text-destructive" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatCurrency(currentStats?.totalOverdue || 0)}
+          </div>
+          {period !== "all" && (
+            <p className={`text-xs ${overdueComparison.color} mt-1`}>
+              {overdueComparison.text}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Recorrência Mensal</CardTitle>
+          <Calendar className="h-4 w-4 text-blue-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatCurrency(currentStats?.monthlyRecurring || 0)}
+          </div>
+          <p className="text-xs text-muted-foreground">Valor fixo mensal</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Assinaturas Ativas</CardTitle>
+          <RefreshCw className="h-4 w-4 text-purple-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatCurrency(currentStats?.activeSubscriptions || 0)}
+          </div>
+          <p className="text-xs text-muted-foreground">Total recorrente</p>
+        </CardContent>
+      </Card>
     </div>
   );
-};
+}

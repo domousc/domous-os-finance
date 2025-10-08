@@ -1,134 +1,290 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Building2, Wallet, AlertCircle, CalendarClock } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, AlertCircle, Calendar, Activity } from "lucide-react";
+import type { Period } from "@/components/shared/PeriodFilter";
+import { calculateDateRange, calculateComparisonRange, countRecurrenceInPeriod, formatComparison } from "@/lib/dateFilters";
 
-export const FinanceOverviewStats = () => {
-  const { data: stats } = useQuery({
-    queryKey: ["finance-overview-stats"],
+interface FinanceOverviewStatsProps {
+  period: Period;
+}
+
+export function FinanceOverviewStats({ period }: FinanceOverviewStatsProps) {
+  const { user } = useAuth();
+  const dateRange = calculateDateRange(period);
+  const comparisonRange = calculateComparisonRange(period);
+  const { data: currentStats } = useQuery({
+    queryKey: ["finance-overview-stats", user?.id, period],
     queryFn: async () => {
-      const [invoices, commissions, expenses] = await Promise.all([
-        supabase.from("invoices").select("*"),
-        supabase.from("partner_commissions").select("*"),
-        supabase.from("company_expenses").select("*"),
+      let invoicesQuery = supabase
+        .from("invoices")
+        .select("status, amount, due_date, paid_date");
+
+      let commissionsQuery = supabase
+        .from("partner_commissions")
+        .select("status, commission_amount, scheduled_payment_date, reference_month");
+
+      let expensesQuery = supabase
+        .from("company_expenses")
+        .select("status, amount, due_date, billing_cycle");
+
+      if (dateRange.start && dateRange.end) {
+        invoicesQuery = invoicesQuery
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+
+        commissionsQuery = commissionsQuery
+          .gte("scheduled_payment_date", dateRange.start.toISOString())
+          .lte("scheduled_payment_date", dateRange.end.toISOString());
+
+        expensesQuery = expensesQuery
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+      }
+
+      const [
+        { data: invoices, error: invoicesError },
+        { data: commissions, error: commissionsError },
+        { data: expenses, error: expensesError },
+      ] = await Promise.all([
+        invoicesQuery,
+        commissionsQuery,
+        expensesQuery,
       ]);
 
-      const receivable = invoices.data
-        ?.filter((i) => i.status === "pending" || i.status === "overdue")
-        .reduce((sum, i) => sum + Number(i.amount), 0) || 0;
+      if (invoicesError) throw invoicesError;
+      if (commissionsError) throw commissionsError;
+      if (expensesError) throw expensesError;
 
-      const payable = commissions.data
-        ?.filter((c) => c.status === "pending")
-        .reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0;
+      const receivable = (invoices || [])
+        .filter((i) => i.status === "pending" || i.status === "overdue")
+        .reduce((sum, i) => sum + Number(i.amount), 0);
 
-      const operational = expenses.data
-        ?.filter((e) => e.status === "pending" || e.status === "overdue")
-        .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+      const commissionsPayable = (commissions || [])
+        .filter((c) => c.status === "pending")
+        .reduce((sum, c) => sum + Number(c.commission_amount), 0);
 
-      const overdue = [
-        ...(invoices.data?.filter((i) => i.status === "overdue") || []),
-        ...(expenses.data?.filter((e) => e.status === "overdue") || []),
-      ].reduce((sum, item) => sum + Number(item.amount), 0);
+      const operational = (expenses || [])
+        .filter((e) => e.status === "pending" || e.status === "overdue")
+        .reduce((sum, e) => {
+          const count = countRecurrenceInPeriod(e.billing_cycle, dateRange.start, dateRange.end);
+          return sum + Number(e.amount) * count;
+        }, 0);
 
-      const today = new Date();
-      const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const payable = commissionsPayable + operational;
 
-      const last30Days = invoices.data
-        ?.filter((i) => {
-          if (!i.paid_date) return false;
-          const paidDate = new Date(i.paid_date);
-          return paidDate >= thirtyDaysAgo && paidDate <= today;
-        })
-        .reduce((sum, i) => sum + Number(i.amount), 0) || 0;
+      const overdue = (invoices || [])
+        .filter((i) => i.status === "overdue")
+        .reduce((sum, i) => sum + Number(i.amount), 0) +
+        (expenses || [])
+          .filter((e) => e.status === "overdue")
+          .reduce((sum, e) => {
+            const count = countRecurrenceInPeriod(e.billing_cycle, dateRange.start, dateRange.end);
+            return sum + Number(e.amount) * count;
+          }, 0);
 
-      const invoicesNext30 = invoices.data
-        ?.filter((i) => {
-          if (i.status !== "pending") return false;
-          const dueDate = new Date(i.due_date);
-          return dueDate >= today && dueDate <= thirtyDaysFromNow;
-        })
-        .reduce((sum, i) => sum + Number(i.amount), 0) || 0;
-
-      const expensesNext30 = expenses.data
-        ?.filter((e) => {
-          if (e.status !== "pending") return false;
-          const dueDate = new Date(e.due_date);
-          return dueDate >= today && dueDate <= thirtyDaysFromNow;
-        })
-        .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
-
-      const next30Days = invoicesNext30 + expensesNext30;
+      const netProjected = receivable - payable;
 
       return {
         receivable,
         payable,
         operational,
-        netProjected: receivable - payable - operational,
+        netProjected,
         overdue,
-        last30Days,
-        next30Days,
       };
     },
+    enabled: !!user,
   });
 
-  const statCards = [
-    {
-      title: "A Receber",
-      value: stats?.receivable || 0,
-      icon: TrendingUp,
-      color: "text-green-600",
+  const { data: previousStats } = useQuery({
+    queryKey: ["finance-overview-comparison", user?.id, period],
+    queryFn: async () => {
+      if (!comparisonRange.start || !comparisonRange.end) return null;
+
+      const [
+        { data: invoices, error: invoicesError },
+        { data: commissions, error: commissionsError },
+        { data: expenses, error: expensesError },
+      ] = await Promise.all([
+        supabase
+          .from("invoices")
+          .select("status, amount, due_date")
+          .gte("due_date", comparisonRange.start.toISOString())
+          .lte("due_date", comparisonRange.end.toISOString()),
+        supabase
+          .from("partner_commissions")
+          .select("status, commission_amount, scheduled_payment_date")
+          .gte("scheduled_payment_date", comparisonRange.start.toISOString())
+          .lte("scheduled_payment_date", comparisonRange.end.toISOString()),
+        supabase
+          .from("company_expenses")
+          .select("status, amount, due_date, billing_cycle")
+          .gte("due_date", comparisonRange.start.toISOString())
+          .lte("due_date", comparisonRange.end.toISOString()),
+      ]);
+
+      if (invoicesError) throw invoicesError;
+      if (commissionsError) throw commissionsError;
+      if (expensesError) throw expensesError;
+
+      const receivable = (invoices || [])
+        .filter((i) => i.status === "pending" || i.status === "overdue")
+        .reduce((sum, i) => sum + Number(i.amount), 0);
+
+      const commissionsPayable = (commissions || [])
+        .filter((c) => c.status === "pending")
+        .reduce((sum, c) => sum + Number(c.commission_amount), 0);
+
+      const operational = (expenses || [])
+        .filter((e) => e.status === "pending" || e.status === "overdue")
+        .reduce((sum, e) => {
+          const count = countRecurrenceInPeriod(e.billing_cycle, comparisonRange.start, comparisonRange.end);
+          return sum + Number(e.amount) * count;
+        }, 0);
+
+      const payable = commissionsPayable + operational;
+      const netProjected = receivable - payable;
+
+      const overdue = (invoices || [])
+        .filter((i) => i.status === "overdue")
+        .reduce((sum, i) => sum + Number(i.amount), 0) +
+        (expenses || [])
+          .filter((e) => e.status === "overdue")
+          .reduce((sum, e) => {
+            const count = countRecurrenceInPeriod(e.billing_cycle, comparisonRange.start, comparisonRange.end);
+            return sum + Number(e.amount) * count;
+          }, 0);
+
+      return { receivable, payable, operational, netProjected, overdue };
     },
-    {
-      title: "A Pagar (Parceiros)",
-      value: stats?.payable || 0,
-      icon: TrendingDown,
-      color: "text-orange-600",
-    },
-    {
-      title: "Despesas Operacionais",
-      value: stats?.operational || 0,
-      icon: Building2,
-      color: "text-blue-600",
-    },
-    {
-      title: "Saldo Projetado",
-      value: stats?.netProjected || 0,
-      icon: Wallet,
-      color: (stats?.netProjected || 0) >= 0 ? "text-green-600" : "text-red-600",
-    },
-    {
-      title: "Em Atraso",
-      value: stats?.overdue || 0,
-      icon: AlertCircle,
-      color: "text-red-600",
-    },
-    {
-      title: "Últimos 30 Dias",
-      value: stats?.last30Days || 0,
-      icon: CalendarClock,
-      color: "text-purple-600",
-    },
-  ];
+    enabled: !!user && !!comparisonRange.start,
+  });
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+
+  const receivableComparison = formatComparison(
+    currentStats?.receivable || 0,
+    previousStats?.receivable || 0,
+    false
+  );
+
+  const payableComparison = formatComparison(
+    currentStats?.payable || 0,
+    previousStats?.payable || 0,
+    true
+  );
+
+  const operationalComparison = formatComparison(
+    currentStats?.operational || 0,
+    previousStats?.operational || 0,
+    true
+  );
+
+  const netComparison = formatComparison(
+    currentStats?.netProjected || 0,
+    previousStats?.netProjected || 0,
+    false
+  );
+
+  const overdueComparison = formatComparison(
+    currentStats?.overdue || 0,
+    previousStats?.overdue || 0,
+    true
+  );
+
+  const netProjectedColor = (currentStats?.netProjected || 0) >= 0 ? "text-green-600" : "text-destructive";
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {statCards.map((stat) => (
-        <Card key={stat.title}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-            <stat.icon className={`h-4 w-4 ${stat.color}`} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(stat.value)}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">A Receber</CardTitle>
+          <TrendingUp className="h-4 w-4 text-green-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatCurrency(currentStats?.receivable || 0)}
+          </div>
+          {period !== "all" && (
+            <p className={`text-xs ${receivableComparison.color} mt-1`}>
+              {receivableComparison.text}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">A Pagar</CardTitle>
+          <TrendingDown className="h-4 w-4 text-destructive" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatCurrency(currentStats?.payable || 0)}
+          </div>
+          {period !== "all" && (
+            <p className={`text-xs ${payableComparison.color} mt-1`}>
+              {payableComparison.text}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Despesas Operacionais</CardTitle>
+          <Activity className="h-4 w-4 text-orange-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatCurrency(currentStats?.operational || 0)}
+          </div>
+          {period !== "all" && (
+            <p className={`text-xs ${operationalComparison.color} mt-1`}>
+              {operationalComparison.text}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Saldo Projetado</CardTitle>
+          <DollarSign className={`h-4 w-4 ${netProjectedColor}`} />
+        </CardHeader>
+        <CardContent>
+          <div className={`text-2xl font-bold ${netProjectedColor}`}>
+            {formatCurrency(currentStats?.netProjected || 0)}
+          </div>
+          {period !== "all" && (
+            <p className={`text-xs ${netComparison.color} mt-1`}>
+              {netComparison.text}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
+          <AlertCircle className="h-4 w-4 text-destructive" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-destructive">
+            {formatCurrency(currentStats?.overdue || 0)}
+          </div>
+          {period !== "all" && (
+            <p className={`text-xs ${overdueComparison.color} mt-1`}>
+              {overdueComparison.text}
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
-};
+}

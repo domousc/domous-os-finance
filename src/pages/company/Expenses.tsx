@@ -5,10 +5,12 @@ import { ExpensesHeader } from "@/components/company/expenses/ExpensesHeader";
 import { ExpensesStats } from "@/components/company/expenses/ExpensesStats";
 import { ExpensesTable } from "@/components/company/expenses/ExpensesTable";
 import { ExpenseDialog } from "@/components/company/expenses/ExpenseDialog";
+import { PeriodFilter, type Period } from "@/components/shared/PeriodFilter";
 import { supabase } from "@/integrations/supabase/client";
 
 const Expenses = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [period, setPeriod] = useState<Period>("30d");
 
   useEffect(() => {
     const channel = supabase
@@ -39,8 +41,9 @@ const Expenses = () => {
     >
       <div className="space-y-6">
         <ExpensesHeader onAddExpense={() => setDialogOpen(true)} />
-        <ExpensesStats />
-        <ExpensesTable />
+        <PeriodFilter period={period} onPeriodChange={setPeriod} />
+        <ExpensesStats period={period} />
+        <ExpensesTable period={period} />
         <ExpenseDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </div>
     </AppLayout>
