@@ -132,7 +132,7 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
     <TableRow>
       <TableCell>
         <div className="font-medium">
-          {expense.description}
+          {expense.item}
           {expense.total_installments > 1 && (
             <span className="ml-2 text-xs text-muted-foreground">
               ({expense.current_installment}/{expense.total_installments})

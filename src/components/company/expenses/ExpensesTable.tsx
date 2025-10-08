@@ -113,7 +113,7 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Descrição</TableHead>
+                  <TableHead>Item</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Ciclo</TableHead>
                   <TableHead>Valor</TableHead>

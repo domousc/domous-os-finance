@@ -44,7 +44,7 @@ import { Button } from "@/components/ui/button";
 const expenseSchema = z.object({
   type: z.enum(["subscription", "service", "infrastructure", "others", "one_time"]),
   category: z.string().optional(),
-  description: z.string().min(1, "Descrição é obrigatória"),
+  item: z.string().min(1, "Item é obrigatório"),
   amount: z.string().min(1, "Valor é obrigatório"),
   billing_cycle: z.enum(["monthly", "annual", "one_time"]),
   due_date: z.date({
@@ -76,7 +76,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
       type: "subscription",
       billing_cycle: "monthly",
       category: "",
-      description: "",
+      item: "",
       amount: "",
       due_date: new Date(),
       payment_method: "",
@@ -92,7 +92,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
       form.reset({
         type: expense.type,
         category: expense.category || "",
-        description: expense.description,
+        item: expense.item,
         amount: expense.total_installments > 1 ? expense.total_amount.toString() : expense.amount.toString(),
         billing_cycle: expense.billing_cycle,
         due_date: new Date(expense.due_date),
@@ -107,7 +107,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
         type: "subscription",
         billing_cycle: "monthly",
         category: "",
-        description: "",
+        item: "",
         amount: "",
         due_date: new Date(),
         payment_method: "",
@@ -138,7 +138,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
           company_id: profile.company_id,
           type: data.type,
           category: data.category || null,
-          description: data.description,
+          item: data.item,
           amount: parseFloat(data.amount),
           billing_cycle: data.billing_cycle,
           due_date: data.due_date.toISOString(),
@@ -171,7 +171,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
               company_id: profile.company_id,
               type: data.type,
               category: data.category || null,
-              description: installments > 1 ? `${data.description} (${i + 1}/${installments})` : data.description,
+              item: installments > 1 ? `${data.item} (${i + 1}/${installments})` : data.item,
               amount: installmentAmount,
               total_amount: totalAmount,
               billing_cycle: data.billing_cycle,
@@ -229,12 +229,12 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="description"
+              name="item"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel>Item</FormLabel>
                   <FormControl>
-                    <Input placeholder="Descreva a despesa" {...field} />
+                    <Input placeholder="Nome do item/despesa" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

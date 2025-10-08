@@ -250,10 +250,10 @@ export type Database = {
           company_id: string
           created_at: string
           current_installment: number | null
-          description: string
           due_date: string
           id: string
           installment_group_id: string | null
+          item: string
           notes: string | null
           paid_date: string | null
           payment_method: string | null
@@ -270,10 +270,10 @@ export type Database = {
           company_id: string
           created_at?: string
           current_installment?: number | null
-          description: string
           due_date: string
           id?: string
           installment_group_id?: string | null
+          item: string
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
@@ -290,10 +290,10 @@ export type Database = {
           company_id?: string
           created_at?: string
           current_installment?: number | null
-          description?: string
           due_date?: string
           id?: string
           installment_group_id?: string | null
+          item?: string
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null

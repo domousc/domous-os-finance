@@ -173,7 +173,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
           if (!acc.groups[groupId]) {
             acc.groups[groupId] = {
               installmentGroupId: groupId,
-              description: expense.description,
+              description: expense.item,
               category: expense.category,
               installments: [],
               totalAmount: Number(expense.total_amount) || 0,
@@ -226,7 +226,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
       const expenseItems: PayableItem[] = expensesGrouped.single.map((expense: any) => ({
         id: expense.id,
         type: "expense" as const,
-        description: expense.description,
+        description: expense.item,
         amount: Number(expense.amount),
         dueDate: new Date(expense.due_date),
         status: expense.status,
