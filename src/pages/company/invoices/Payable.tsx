@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/shared/AppLayout";
 import { companyMenuItems } from "@/config/companyMenuItems";
 import { PayableStats } from "@/components/company/invoices/payable/PayableStats";
@@ -7,10 +7,29 @@ import { PayableItemsTable } from "@/components/company/invoices/payable/Payable
 import { PersonPayableView } from "@/components/company/invoices/payable/PersonPayableView";
 import { PeriodFilter, type Period, type CustomDateRange } from "@/components/shared/PeriodFilter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { deleteOldExpenses } from "@/utils/migrateFláviaKelvin";
 
 export default function Payable() {
   const [period, setPeriod] = useState<Period>("30d");
   const [customRange, setCustomRange] = useState<CustomDateRange>();
+
+  // Executar migração uma vez ao carregar a página
+  useEffect(() => {
+    const runMigration = async () => {
+      try {
+        await deleteOldExpenses();
+      } catch (error) {
+        console.error('Erro na migração:', error);
+      }
+    };
+    
+    // Verificar se já executou antes
+    const migrationDone = localStorage.getItem('migration_flavia_kelvin_done');
+    if (!migrationDone) {
+      runMigration();
+      localStorage.setItem('migration_flavia_kelvin_done', 'true');
+    }
+  }, []);
 
   return (
     <AppLayout menuItems={companyMenuItems} headerTitle="À Pagar">

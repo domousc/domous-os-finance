@@ -10,6 +10,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -113,7 +120,22 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Item</TableHead>
+                  <TableHead>
+                    Item
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="h-3 w-3 ml-1 inline" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Descrição da despesa (ex: Software, Aluguel)</p>
+                          <p className="text-xs text-muted-foreground">
+                            Para pessoas, use a página "Time"
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Ciclo</TableHead>
                   <TableHead>Valor</TableHead>

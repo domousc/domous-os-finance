@@ -44,7 +44,20 @@ import { Button } from "@/components/ui/button";
 const expenseSchema = z.object({
   type: z.enum(["subscription", "service", "infrastructure", "others", "one_time"]),
   category: z.string().optional(),
-  item: z.string().min(1, "Item é obrigatório"),
+  item: z.string()
+    .min(1, "Item é obrigatório")
+    .refine(
+      (val) => {
+        const commonNames = ['joão', 'maria', 'josé', 'ana', 'pedro', 'carlos', 'flávia', 'kelvin', 
+                            'lucas', 'julia', 'rafael', 'fernanda', 'gabriel', 'camila', 'bruno', 
+                            'amanda', 'felipe', 'beatriz', 'rodrigo', 'carolina'];
+        const lowerVal = val.toLowerCase();
+        return !commonNames.some(name => lowerVal.includes(name));
+      },
+      {
+        message: "Este parece ser um nome de pessoa. Use a página 'Time' para cadastrar membros da equipe.",
+      }
+    ),
   amount: z.string().min(1, "Valor é obrigatório"),
   billing_cycle: z.enum(["monthly", "annual", "one_time"]),
   due_date: z.date({
@@ -227,6 +240,13 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-4 mb-4 border border-blue-200 dark:border-blue-900">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
+                <strong>💡 Dica:</strong> Para cadastrar pagamentos a pessoas (salários, comissões), 
+                use a página <strong>"Time"</strong> em vez de despesas operacionais.
+              </p>
+            </div>
+
             <FormField
               control={form.control}
               name="item"
@@ -234,7 +254,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
                 <FormItem>
                   <FormLabel>Item</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome do item/despesa" {...field} />
+                    <Input placeholder="Nome do item/despesa (ex: Software, Aluguel)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
