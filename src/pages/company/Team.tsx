@@ -5,6 +5,7 @@ import { TeamHeader } from "@/components/company/team/TeamHeader";
 import { TeamStats } from "@/components/company/team/TeamStats";
 import { TeamMembersTable } from "@/components/company/team/TeamMembersTable";
 import { TeamPaymentsView } from "@/components/company/team/TeamPaymentsView";
+import { CompanySettings } from "@/components/company/team/CompanySettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PeriodFilter, type Period } from "@/components/shared/PeriodFilter";
 
@@ -29,6 +30,7 @@ const Team = () => {
           <TabsList>
             <TabsTrigger value="payments">Pagamentos</TabsTrigger>
             <TabsTrigger value="members">Equipe</TabsTrigger>
+            <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
           
           <TabsContent value="payments" className="mt-6">
@@ -37,6 +39,10 @@ const Team = () => {
           
           <TabsContent value="members" className="mt-6">
             <TeamMembersTable />
+          </TabsContent>
+
+          <TabsContent value="settings" className="mt-6">
+            <CompanySettings />
           </TabsContent>
         </Tabs>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { Plus } from "lucide-react";
 import { MemberPaymentGroup } from "./MemberPaymentGroup";
 import { TeamPaymentDialog } from "./TeamPaymentDialog";
 import { Period, getDateRangeFilter } from "@/lib/dateFilters";
-import { toast } from "sonner";
 
 interface TeamPaymentsViewProps {
   period: Period;
@@ -15,9 +14,8 @@ interface TeamPaymentsViewProps {
 export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
-  const [hasGeneratedSalaries, setHasGeneratedSalaries] = useState(false);
 
-  const { data: paymentsGrouped, refetch, isLoading } = useQuery({
+  const { data: paymentsGrouped, refetch } = useQuery({
     queryKey: ["team-payments-grouped", period],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -30,6 +28,23 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
         .single();
 
       if (!profile?.company_id) throw new Error("No company");
+
+      // Auto-generate salaries if none exist for current month
+      const currentMonth = new Date();
+      currentMonth.setDate(1);
+      currentMonth.setHours(0, 0, 0, 0);
+      
+      const { data: existingSalaries } = await supabase
+        .from("team_payments")
+        .select("id")
+        .eq("company_id", profile.company_id)
+        .eq("payment_type", "salary")
+        .gte("reference_month", currentMonth.toISOString().split('T')[0])
+        .limit(1);
+
+      if (!existingSalaries || existingSalaries.length === 0) {
+        await supabase.rpc("generate_monthly_salaries");
+      }
 
       const dateFilter = getDateRangeFilter(period);
 
@@ -61,30 +76,6 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
     },
   });
 
-  // Auto-generate salaries when first viewing the payments tab
-  useEffect(() => {
-    const generateSalariesIfNeeded = async () => {
-      if (hasGeneratedSalaries || !paymentsGrouped) return;
-
-      try {
-        const { data, error } = await supabase.rpc("generate_monthly_salaries");
-        
-        if (error) throw error;
-
-        if (data > 0) {
-          toast.success(`${data} salário(s) gerado(s) automaticamente!`);
-          refetch();
-        }
-        
-        setHasGeneratedSalaries(true);
-      } catch (error: any) {
-        console.error("Erro ao gerar salários:", error);
-      }
-    };
-
-    generateSalariesIfNeeded();
-  }, [paymentsGrouped, hasGeneratedSalaries, refetch]);
-
   const handleCloseDialog = () => {
     setSelectedPayment(null);
     setIsDialogOpen(false);
@@ -102,22 +93,14 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
       </div>
 
       <div className="space-y-4">
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Carregando...</div>
-        ) : paymentsGrouped && paymentsGrouped.length > 0 ? (
-          paymentsGrouped.map((group: any) => (
-            <MemberPaymentGroup
-              key={group.member.id}
-              member={group.member}
-              payments={group.payments}
-              onRefetch={refetch}
-            />
-          ))
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            Nenhum pagamento encontrado para o período selecionado
-          </div>
-        )}
+        {paymentsGrouped?.map((group: any) => (
+          <MemberPaymentGroup
+            key={group.member.id}
+            member={group.member}
+            payments={group.payments}
+            onRefetch={refetch}
+          />
+        ))}
       </div>
 
       <TeamPaymentDialog
