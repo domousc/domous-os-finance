@@ -325,6 +325,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
                 <TableHead className="w-12"></TableHead>
                 <TableHead>Descrição</TableHead>
                 <TableHead>Categoria</TableHead>
+                <TableHead>Observações</TableHead>
                 <TableHead>Vencimento</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
@@ -334,7 +335,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
             <TableBody>
               {filteredItems.length === 0 ? (
                 <TableRow>
-                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={9} className="text-center py-8 text-muted-foreground">
                     Nenhum item a pagar encontrado
                   </td>
                 </TableRow>
@@ -347,8 +348,10 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
                         installmentGroupId: item.installmentGroupId!,
                         description: item.description,
                         category: item.category || null,
+                        notes: item.notes || null,
                         installments: item.installments || [],
                         totalAmount: item.totalAmount || 0,
+                        totalInstallments: item.installments?.[0]?.total_installments || item.installments?.length || 0,
                         paidCount: item.paidCount || 0,
                         pendingCount: item.pendingCount || 0,
                         overdueCount: item.overdueCount || 0,

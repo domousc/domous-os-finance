@@ -15,6 +15,7 @@ interface Expense {
   paid_date: string | null;
   status: string;
   current_installment: number;
+  total_installments: number;
   payment_method: string | null;
   notes: string | null;
   category: string | null;
@@ -31,6 +32,8 @@ export function ExpenseInstallmentsDropdown({
     (a, b) => (a.current_installment || 1) - (b.current_installment || 1)
   );
 
+  const totalInstallments = sortedInstallments[0]?.total_installments || installments.length;
+
   return (
     <div className="p-4">
       <div className="mb-2 px-4">
@@ -42,7 +45,6 @@ export function ExpenseInstallmentsDropdown({
             <TableRow>
               <TableHead className="w-12"></TableHead>
               <TableHead>Parcela</TableHead>
-              <TableHead>Descrição</TableHead>
               <TableHead>Valor</TableHead>
               <TableHead>Vencimento</TableHead>
               <TableHead>Status</TableHead>
@@ -54,7 +56,7 @@ export function ExpenseInstallmentsDropdown({
               <ExpenseInstallmentRow
                 key={installment.id}
                 installment={installment}
-                totalInstallments={installments.length}
+                totalInstallments={totalInstallments}
               />
             ))}
           </TableBody>

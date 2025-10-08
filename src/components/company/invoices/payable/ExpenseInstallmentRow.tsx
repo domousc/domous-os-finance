@@ -90,7 +90,6 @@ export function ExpenseInstallmentRow({
       <TableCell>
         {installment.current_installment || 1}/{totalInstallments}
       </TableCell>
-      <TableCell>{installment.description}</TableCell>
       <TableCell>R$ {installment.amount.toFixed(2)}</TableCell>
       <TableCell>
         {format(new Date(installment.due_date), "dd/MM/yyyy", { locale: ptBR })}

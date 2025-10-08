@@ -26,8 +26,10 @@ interface GroupedExpense {
   installmentGroupId: string;
   description: string;
   category: string | null;
+  notes: string | null;
   installments: Expense[];
   totalAmount: number;
+  totalInstallments: number;
   paidCount: number;
   pendingCount: number;
   overdueCount: number;
@@ -47,10 +49,25 @@ export function ExpenseGroupRow({ group }: ExpenseGroupRowProps) {
     if (group.overdueCount > 0) {
       return { label: "Atrasado", variant: "destructive" as const };
     }
-    if (group.paidCount === group.installments.length) {
+    if (group.paidCount === group.totalInstallments) {
       return { label: "Pago", variant: "default" as const };
     }
     return { label: "Em Dia", variant: "outline" as const };
+  };
+
+  const getCategoryDisplay = () => {
+    const categoryMap: Record<string, string> = {
+      subscription: "Assinatura",
+      team: "Time",
+      service: "Serviço",
+      other: "Outro",
+    };
+    
+    const displayText = group.category 
+      ? categoryMap[group.category] || group.category
+      : "Despesa";
+    
+    return <Badge variant="secondary">{displayText}</Badge>;
   };
 
   const handleMarkAllAsPaid = async () => {
@@ -123,14 +140,15 @@ export function ExpenseGroupRow({ group }: ExpenseGroupRowProps) {
             )}
           </Button>
         </TableCell>
-        <TableCell>
-          {group.category && <Badge variant="secondary">{group.category}</Badge>}
-        </TableCell>
         <TableCell className="font-medium">
           {group.description}
           <span className="ml-2 text-xs text-muted-foreground">
-            ({group.paidCount}/{group.installments.length})
+            ({group.paidCount}/{group.totalInstallments})
           </span>
+        </TableCell>
+        <TableCell>{getCategoryDisplay()}</TableCell>
+        <TableCell>
+          <span className="text-sm text-muted-foreground">{group.notes || "-"}</span>
         </TableCell>
         <TableCell>
           {group.nextDueDate ? (
@@ -150,7 +168,7 @@ export function ExpenseGroupRow({ group }: ExpenseGroupRowProps) {
       </TableRow>
       {isExpanded && (
         <TableRow>
-          <TableCell colSpan={8} className="p-0 bg-muted/20">
+          <TableCell colSpan={9} className="p-0 bg-muted/20">
             <ExpenseInstallmentsDropdown installments={group.installments} />
           </TableCell>
         </TableRow>

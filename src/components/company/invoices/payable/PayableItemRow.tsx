@@ -39,18 +39,18 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
       return <Badge variant="default">Comissão</Badge>;
     }
     
-    if (item.category) {
-      return <Badge variant="secondary">{item.category}</Badge>;
-    }
-    
-    // Fallback para tipo se não houver categoria
-    const typeLabels: Record<string, string> = {
-      fixed: "Fixo",
-      variable: "Variável",
-      one_time: "Único",
+    const categoryMap: Record<string, string> = {
+      subscription: "Assinatura",
+      team: "Time",
+      service: "Serviço",
+      other: "Outro",
     };
     
-    return <Badge variant="outline">{typeLabels[item.expenseType || ""] || "Despesa"}</Badge>;
+    const displayText = item.category 
+      ? categoryMap[item.category] || item.category
+      : "Despesa";
+    
+    return <Badge variant="secondary">{displayText}</Badge>;
   };
 
   const handleMarkAsPaid = async () => {
@@ -124,6 +124,9 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
         <TableCell className="font-medium">{item.description}</TableCell>
         <TableCell>{getCategoryDisplay()}</TableCell>
         <TableCell>
+          <span className="text-sm text-muted-foreground">{item.notes || "-"}</span>
+        </TableCell>
+        <TableCell>
           {format(item.dueDate, "dd/MM/yyyy", { locale: ptBR })}
         </TableCell>
         <TableCell>{getStatusBadge(item.status)}</TableCell>
@@ -147,7 +150,7 @@ export function PayableItemRow({ item, onUpdate }: PayableItemRowProps) {
 
       {expanded && (
         <TableRow className={isOverdue ? "bg-red-50 dark:bg-red-950/20" : ""}>
-          <TableCell colSpan={8} className="bg-muted/50">
+          <TableCell colSpan={9} className="bg-muted/50">
             <div className="py-4 px-6 space-y-3">
               {item.type === "commission" && item.commissionDetails && (
                 <div className="space-y-2">
