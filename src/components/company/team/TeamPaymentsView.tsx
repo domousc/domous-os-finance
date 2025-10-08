@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar } from "lucide-react";
+import { Plus } from "lucide-react";
 import { MemberPaymentGroup } from "./MemberPaymentGroup";
 import { TeamPaymentDialog } from "./TeamPaymentDialog";
 import { Period, getDateRangeFilter } from "@/lib/dateFilters";
@@ -15,6 +15,7 @@ interface TeamPaymentsViewProps {
 export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [hasGeneratedSalaries, setHasGeneratedSalaries] = useState(false);
 
   const { data: paymentsGrouped, refetch } = useQuery({
     queryKey: ["team-payments-grouped", period],
@@ -60,22 +61,29 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
     },
   });
 
-  const handleGenerateSalaries = async () => {
-    try {
-      const { data, error } = await supabase.rpc("generate_monthly_salaries");
-      
-      if (error) throw error;
+  // Auto-generate salaries when first viewing the payments tab
+  useEffect(() => {
+    const generateSalariesIfNeeded = async () => {
+      if (hasGeneratedSalaries || !paymentsGrouped) return;
 
-      if (data === 0) {
-        toast.info("Nenhum salário novo para gerar");
-      } else {
-        toast.success(`${data} salário(s) gerado(s) com sucesso!`);
-        refetch();
+      try {
+        const { data, error } = await supabase.rpc("generate_monthly_salaries");
+        
+        if (error) throw error;
+
+        if (data > 0) {
+          toast.success(`${data} salário(s) gerado(s) automaticamente!`);
+          refetch();
+        }
+        
+        setHasGeneratedSalaries(true);
+      } catch (error: any) {
+        console.error("Erro ao gerar salários:", error);
       }
-    } catch (error: any) {
-      toast.error(error.message);
-    }
-  };
+    };
+
+    generateSalariesIfNeeded();
+  }, [paymentsGrouped, hasGeneratedSalaries, refetch]);
 
   const handleCloseDialog = () => {
     setSelectedPayment(null);
@@ -87,16 +95,10 @@ export const TeamPaymentsView = ({ period }: TeamPaymentsViewProps) => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Pagamentos</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleGenerateSalaries}>
-            <Calendar className="h-4 w-4 mr-2" />
-            Gerar Salários do Mês
-          </Button>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Pagamento
-          </Button>
-        </div>
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Pagamento
+        </Button>
       </div>
 
       <div className="space-y-4">

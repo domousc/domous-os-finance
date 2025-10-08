@@ -305,6 +305,30 @@ export type Database = {
         }
         Relationships: []
       }
+      company_settings: {
+        Row: {
+          company_id: string
+          created_at: string
+          default_payment_day: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          default_payment_day?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          default_payment_day?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
@@ -902,6 +926,7 @@ export type Database = {
           monthly_salary: number | null
           name: string
           notes: string | null
+          payment_day: number | null
           phone: string | null
           pix_key: string | null
           role: string
@@ -921,6 +946,7 @@ export type Database = {
           monthly_salary?: number | null
           name: string
           notes?: string | null
+          payment_day?: number | null
           phone?: string | null
           pix_key?: string | null
           role: string
@@ -940,6 +966,7 @@ export type Database = {
           monthly_salary?: number | null
           name?: string
           notes?: string | null
+          payment_day?: number | null
           phone?: string | null
           pix_key?: string | null
           role?: string

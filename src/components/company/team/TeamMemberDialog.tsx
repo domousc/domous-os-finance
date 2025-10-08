@@ -16,6 +16,7 @@ const memberSchema = z.object({
   role: z.string().min(1, "Cargo é obrigatório"),
   employment_type: z.enum(["fixed", "variable"]),
   monthly_salary: z.string().optional(),
+  payment_day: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().optional(),
   cpf: z.string().optional(),
@@ -38,7 +39,7 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<MemberFormData>({
     resolver: zodResolver(memberSchema),
     defaultValues: {
-      employment_type: "variable",
+      employment_type: "fixed",
     },
   });
 
@@ -51,6 +52,7 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
         role: member.role,
         employment_type: member.employment_type,
         monthly_salary: member.monthly_salary?.toString() || "",
+        payment_day: member.payment_day?.toString() || "",
         email: member.email || "",
         phone: member.phone || "",
         cpf: member.cpf || "",
@@ -62,7 +64,7 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
       });
     } else {
       reset({
-        employment_type: "variable",
+        employment_type: "fixed",
       });
     }
   }, [member, reset]);
@@ -96,6 +98,7 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
         monthly_salary: data.employment_type === 'fixed' && data.monthly_salary 
           ? parseFloat(data.monthly_salary) 
           : null,
+        payment_day: data.payment_day ? parseInt(data.payment_day) : null,
       };
 
       if (member) {
@@ -155,15 +158,31 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
             </div>
 
             {employmentType === 'fixed' && (
-              <div className="space-y-2">
-                <Label>Salário Mensal</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0,00"
-                  {...register("monthly_salary")}
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label>Salário Mensal</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    {...register("monthly_salary")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Dia de Pagamento</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="31"
+                    placeholder="Padrão: 10"
+                    {...register("payment_day")}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Deixe vazio para usar dia 10 (padrão da empresa)
+                  </p>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -185,7 +204,9 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
               <Label>Chave PIX</Label>
               <Input {...register("pix_key")} />
             </div>
+          </div>
 
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Banco</Label>
               <Input {...register("bank_name")} />
