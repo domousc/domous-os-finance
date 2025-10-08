@@ -296,7 +296,7 @@ export const ExpenseDialog = ({ open, onOpenChange, expense }: ExpenseDialogProp
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoria (Opcional)</FormLabel>
+                  <FormLabel>Detalhes (Opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: AWS, Google Ads, Domínio" {...field} />
                   </FormControl>
