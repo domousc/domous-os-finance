@@ -15,9 +15,9 @@ import { toast } from "sonner";
 const paymentSchema = z.object({
   team_member_id: z.string().min(1, "Membro é obrigatório"),
   payment_type: z.enum(["bonus", "commission", "service"]),
-  description: z.string().min(1, "Descrição é obrigatória"),
+  description: z.string().optional(),
   amount: z.string().min(1, "Valor é obrigatório"),
-  reference_month: z.string().min(1, "Mês de referência é obrigatório"),
+  reference_month: z.string().optional(),
   due_date: z.string().min(1, "Data de vencimento é obrigatória"),
   notes: z.string().optional(),
 });
@@ -101,8 +101,8 @@ export const TeamPaymentDialog = ({ open, onClose, payment }: TeamPaymentDialogP
       const paymentData: any = {
         team_member_id: data.team_member_id,
         payment_type: data.payment_type,
-        description: data.description,
-        reference_month: data.reference_month,
+        description: data.description || null,
+        reference_month: data.reference_month || null,
         notes: data.notes || null,
         company_id: profile.company_id,
         amount: parseFloat(data.amount),
@@ -177,7 +177,7 @@ export const TeamPaymentDialog = ({ open, onClose, payment }: TeamPaymentDialogP
           </div>
 
           <div className="space-y-2">
-            <Label>Descrição *</Label>
+            <Label>Descrição</Label>
             <Input {...register("description")} placeholder="Ex: Serviço de design" />
             {errors.description && (
               <p className="text-sm text-destructive">{errors.description.message}</p>
@@ -208,7 +208,7 @@ export const TeamPaymentDialog = ({ open, onClose, payment }: TeamPaymentDialogP
           </div>
 
           <div className="space-y-2">
-            <Label>Mês de Referência *</Label>
+            <Label>Mês de Referência</Label>
             <Input type="month" {...register("reference_month")} />
             {errors.reference_month && (
               <p className="text-sm text-destructive">{errors.reference_month.message}</p>
