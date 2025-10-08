@@ -81,7 +81,9 @@ export const MemberPaymentGroup = ({ member, payments, onRefetch }: MemberPaymen
                 <p className="font-medium">{payment.description}</p>
                 <div className="flex gap-2 mt-1">
                   <Badge variant={payment.payment_type === 'salary' ? 'default' : 'outline'}>
-                    {payment.payment_type === 'salary' ? 'Salário' : 'Serviço'}
+                    {payment.payment_type === 'salary' ? 'Salário' : 
+                     payment.payment_type === 'bonus' ? 'Bonificação' :
+                     payment.payment_type === 'commission' ? 'Comissão' : 'Serviço'}
                   </Badge>
                   <Badge variant={payment.status === 'paid' ? 'default' : 'secondary'}>
                     {payment.status === 'paid' ? 'Pago' : 'Pendente'}

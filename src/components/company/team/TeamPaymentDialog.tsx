@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 const paymentSchema = z.object({
   team_member_id: z.string().min(1, "Membro é obrigatório"),
-  payment_type: z.enum(["salary", "service"]),
+  payment_type: z.enum(["bonus", "commission", "service"]),
   description: z.string().min(1, "Descrição é obrigatória"),
   amount: z.string().min(1, "Valor é obrigatório"),
   reference_month: z.string().min(1, "Mês de referência é obrigatório"),
@@ -34,7 +34,7 @@ export const TeamPaymentDialog = ({ open, onClose, payment }: TeamPaymentDialogP
   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      payment_type: "service",
+      payment_type: "bonus",
     },
   });
 
@@ -79,7 +79,7 @@ export const TeamPaymentDialog = ({ open, onClose, payment }: TeamPaymentDialogP
       const today = new Date();
       const currentMonth = today.toISOString().split('T')[0].substring(0, 7) + '-01';
       reset({
-        payment_type: "service",
+        payment_type: "bonus",
         reference_month: currentMonth,
       });
     }
@@ -162,14 +162,15 @@ export const TeamPaymentDialog = ({ open, onClose, payment }: TeamPaymentDialogP
           <div className="space-y-2">
             <Label>Tipo de Pagamento *</Label>
             <Select
-              onValueChange={(value) => setValue("payment_type", value as "salary" | "service")}
-              defaultValue={payment?.payment_type || "service"}
+              onValueChange={(value) => setValue("payment_type", value as "bonus" | "commission" | "service")}
+              defaultValue={payment?.payment_type || "bonus"}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="salary">Salário</SelectItem>
+                <SelectItem value="bonus">Bonificação</SelectItem>
+                <SelectItem value="commission">Comissão</SelectItem>
                 <SelectItem value="service">Serviço</SelectItem>
               </SelectContent>
             </Select>

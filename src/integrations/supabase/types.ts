@@ -961,6 +961,7 @@ export type Database = {
           payment_method: string | null
           payment_type: string
           reference_month: string
+          salary_snapshot: number | null
           status: string
           team_member_id: string
           updated_at: string
@@ -977,6 +978,7 @@ export type Database = {
           payment_method?: string | null
           payment_type?: string
           reference_month: string
+          salary_snapshot?: number | null
           status?: string
           team_member_id: string
           updated_at?: string
@@ -993,6 +995,7 @@ export type Database = {
           payment_method?: string | null
           payment_type?: string
           reference_month?: string
+          salary_snapshot?: number | null
           status?: string
           team_member_id?: string
           updated_at?: string
