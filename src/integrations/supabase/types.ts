@@ -968,6 +968,7 @@ export type Database = {
         | "marketing"
         | "team"
         | "one_time"
+        | "others"
       invoice_status: "pending" | "paid" | "canceled" | "overdue"
       plan_status: "active" | "inactive"
       service_status: "active" | "inactive" | "archived"
@@ -1117,6 +1118,7 @@ export const Constants = {
         "marketing",
         "team",
         "one_time",
+        "others",
       ],
       invoice_status: ["pending", "paid", "canceled", "overdue"],
       plan_status: ["active", "inactive"],
