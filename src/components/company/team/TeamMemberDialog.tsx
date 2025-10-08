@@ -21,6 +21,7 @@ const memberSchema = z.object({
   phone: z.string().optional(),
   cpf: z.string().optional(),
   pix_key: z.string().optional(),
+  pix_key_type: z.string().optional(),
   bank_name: z.string().optional(),
   bank_agency: z.string().optional(),
   bank_account: z.string().optional(),
@@ -57,6 +58,7 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
         phone: member.phone || "",
         cpf: member.cpf || "",
         pix_key: member.pix_key || "",
+        pix_key_type: member.pix_key_type || "",
         bank_name: member.bank_name || "",
         bank_agency: member.bank_agency || "",
         bank_account: member.bank_account || "",
@@ -90,6 +92,7 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
         phone: data.phone || null,
         cpf: data.cpf || null,
         pix_key: data.pix_key || null,
+        pix_key_type: data.pix_key_type || null,
         bank_name: data.bank_name || null,
         bank_agency: data.bank_agency || null,
         bank_account: data.bank_account || null,
@@ -198,6 +201,27 @@ export const TeamMemberDialog = ({ open, onClose, member }: TeamMemberDialogProp
             <div className="space-y-2">
               <Label>CPF</Label>
               <Input {...register("cpf")} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Tipo de Chave PIX</Label>
+              <Select
+                value={watch("pix_key_type") || ""}
+                onValueChange={(value) => setValue("pix_key_type", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cpf">CPF</SelectItem>
+                  <SelectItem value="cnpj">CNPJ</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="telefone">Telefone</SelectItem>
+                  <SelectItem value="aleatoria">Chave Aleatória</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

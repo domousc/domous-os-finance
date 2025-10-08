@@ -929,6 +929,7 @@ export type Database = {
           payment_day: number | null
           phone: string | null
           pix_key: string | null
+          pix_key_type: string | null
           role: string
           status: string
           updated_at: string
@@ -949,6 +950,7 @@ export type Database = {
           payment_day?: number | null
           phone?: string | null
           pix_key?: string | null
+          pix_key_type?: string | null
           role: string
           status?: string
           updated_at?: string
@@ -969,6 +971,7 @@ export type Database = {
           payment_day?: number | null
           phone?: string | null
           pix_key?: string | null
+          pix_key_type?: string | null
           role?: string
           status?: string
           updated_at?: string
