@@ -110,7 +110,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-background relative">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-[#0e0e0e] relative">
         {/* Theme Toggle */}
         <button
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
