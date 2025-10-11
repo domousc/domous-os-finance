@@ -24,23 +24,6 @@ export const TeamPaymentsView = () => {
 
       if (!profile?.company_id) throw new Error("No company");
 
-      // Auto-generate salaries if none exist for current month
-      const currentMonth = new Date();
-      currentMonth.setDate(1);
-      currentMonth.setHours(0, 0, 0, 0);
-      
-      const { data: existingSalaries } = await supabase
-        .from("team_payments")
-        .select("id")
-        .eq("company_id", profile.company_id)
-        .eq("payment_type", "salary")
-        .gte("reference_month", currentMonth.toISOString().split('T')[0])
-        .limit(1);
-
-      if (!existingSalaries || existingSalaries.length === 0) {
-        await supabase.rpc("generate_monthly_salaries");
-      }
-
       // Buscar todos os pagamentos
       const { data: payments } = await supabase
         .from("team_payments")
