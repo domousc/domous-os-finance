@@ -1,6 +1,7 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Moon, Sun } from "lucide-react";
 import authHero from "@/assets/images/auth-hero.jpg";
+import domousLogo from "@/assets/images/domous-logo.png";
 import { AnimatedParticles } from "./AnimatedParticles";
 import { FloatingIcons } from "./FloatingIcons";
 
@@ -126,7 +127,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
 
         {/* Mobile Logo */}
         <div className="lg:hidden absolute top-6 left-6 animate-fade-in">
-          <h2 className="text-2xl font-bold text-primary">Domous OS</h2>
+          <img src={domousLogo} alt="Domous OS" className="h-12 w-auto" />
         </div>
 
         <div className="w-full max-w-md animate-fade-in">
