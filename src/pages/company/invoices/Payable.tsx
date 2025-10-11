@@ -34,13 +34,20 @@ export default function Payable() {
   return (
     <AppLayout menuItems={companyMenuItems} headerTitle="À Pagar">
       <div className="space-y-6">
-        <PayableHeader />
-        <PeriodFilter 
-          period={period} 
-          onPeriodChange={setPeriod}
-          customRange={customRange}
-          onCustomRangeChange={setCustomRange}
-        />
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Pagamentos Pendentes</h2>
+            <p className="text-muted-foreground">
+              Gerencie pagamentos de comissões, equipe e despesas
+            </p>
+          </div>
+          <PeriodFilter 
+            period={period} 
+            onPeriodChange={setPeriod}
+            customRange={customRange}
+            onCustomRangeChange={setCustomRange}
+          />
+        </div>
         <PayableStats period={period} />
         
         <Tabs defaultValue="items" className="w-full">

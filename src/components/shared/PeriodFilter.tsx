@@ -72,7 +72,7 @@ export const PeriodFilter = ({
         <Button
           variant="outline"
           size={isMobile ? "sm" : "default"}
-          className="gap-2 ml-auto"
+          className="gap-2 w-full sm:w-auto sm:ml-auto"
         >
           <CalendarIcon className="h-4 w-4" />
           {!isMobile && <span>{getCurrentLabel()}</span>}

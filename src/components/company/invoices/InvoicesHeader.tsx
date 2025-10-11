@@ -20,7 +20,7 @@ export function InvoicesHeader() {
         <h2 className="text-2xl font-bold">Contas a Receber</h2>
         <p className="text-muted-foreground">Gerencie suas faturas</p>
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <div className="relative flex-1 sm:flex-initial">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -31,7 +31,7 @@ export function InvoicesHeader() {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-full sm:w-32">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

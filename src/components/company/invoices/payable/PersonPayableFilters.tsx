@@ -14,11 +14,11 @@ export function PersonPayableFilters({
   onSortByChange,
 }: PersonPayableFiltersProps) {
   return (
-    <div className="flex gap-4 flex-wrap">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
         <span className="text-sm text-muted-foreground">Tipo:</span>
         <Select value={personType} onValueChange={onPersonTypeChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -29,10 +29,10 @@ export function PersonPayableFilters({
         </Select>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
         <span className="text-sm text-muted-foreground">Ordenar por:</span>
         <Select value={sortBy} onValueChange={onSortByChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
