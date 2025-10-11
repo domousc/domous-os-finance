@@ -24,12 +24,12 @@ export const TeamPaymentsView = () => {
 
       if (!profile?.company_id) throw new Error("No company");
 
-      // Buscar todos os pagamentos
+      // Buscar todos os pagamentos, incluindo de membros inativos
       const { data: payments } = await supabase
         .from("team_payments")
         .select(`
           *,
-          team_member:team_members(*)
+          team_member:team_members!inner(*)
         `)
         .eq("company_id", profile.company_id)
         .order("due_date", { ascending: false });
