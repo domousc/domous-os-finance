@@ -20,19 +20,19 @@ const Team = () => {
         
         <TeamStats />
         
-        <Tabs defaultValue="payments" className="w-full">
+        <Tabs defaultValue="members" className="w-full">
           <TabsList>
-            <TabsTrigger value="payments">Pagamentos</TabsTrigger>
             <TabsTrigger value="members">Equipe</TabsTrigger>
+            <TabsTrigger value="payments">Pagamentos</TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="payments" className="mt-6">
-            <TeamPaymentsView />
-          </TabsContent>
-          
           <TabsContent value="members" className="mt-6">
             <TeamMembersTable />
+          </TabsContent>
+          
+          <TabsContent value="payments" className="mt-6">
+            <TeamPaymentsView />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">

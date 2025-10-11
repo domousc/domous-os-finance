@@ -60,10 +60,15 @@ export const TeamPaymentsView = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Pagamentos da Equipe</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Pagamentos da Equipe</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Gerencie salários, bonificações e comissões dos membros
+          </p>
+        </div>
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Novo Pagamento
+          Pagamento Avulso
         </Button>
       </div>
 
