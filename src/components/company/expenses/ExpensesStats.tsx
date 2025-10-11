@@ -129,11 +129,9 @@ export function ExpensesStats({ period }: ExpensesStatsProps) {
           <div className="text-2xl font-bold">
             {formatCurrency(currentStats?.totalPending || 0)}
           </div>
-          {period !== "all" && (
-            <p className={`text-xs ${pendingComparison.color} mt-1`}>
-              {pendingComparison.text}
-            </p>
-          )}
+          <p className={`text-xs ${pendingComparison.color} mt-1`}>
+            {pendingComparison.text}
+          </p>
         </CardContent>
       </Card>
 
@@ -146,11 +144,9 @@ export function ExpensesStats({ period }: ExpensesStatsProps) {
           <div className="text-2xl font-bold">
             {formatCurrency(currentStats?.totalOverdue || 0)}
           </div>
-          {period !== "all" && (
-            <p className={`text-xs ${overdueComparison.color} mt-1`}>
-              {overdueComparison.text}
-            </p>
-          )}
+          <p className={`text-xs ${overdueComparison.color} mt-1`}>
+            {overdueComparison.text}
+          </p>
         </CardContent>
       </Card>
 

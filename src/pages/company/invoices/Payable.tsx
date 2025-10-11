@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { deleteOldExpenses } from "@/utils/migrateFláviaKelvin";
 
 export default function Payable() {
-  const [period, setPeriod] = useState<Period>("30d");
+  const [period, setPeriod] = useState<Period>("1m");
   const [customRange, setCustomRange] = useState<CustomDateRange>();
 
   // Executar migração uma vez ao carregar a página

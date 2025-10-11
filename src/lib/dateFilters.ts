@@ -21,20 +21,24 @@ export const calculateDateRange = (period: Period): DateRange => {
   const today = new Date();
   
   switch (period) {
+    case "1d":
+      return { start: subDays(today, 1), end: today };
     case "7d":
       return { start: subDays(today, 7), end: today };
-    case "30d":
-      return { start: subDays(today, 30), end: today };
-    case "90d":
-      return { start: subDays(today, 90), end: today };
+    case "14d":
+      return { start: subDays(today, 14), end: today };
+    case "1m":
+      return { start: subMonths(today, 1), end: today };
+    case "3m":
+      return { start: subMonths(today, 3), end: today };
     case "6m":
       return { start: subMonths(today, 6), end: today };
     case "1y":
       return { start: subYears(today, 1), end: today };
-    case "all":
-      return { start: null, end: null };
+    case "custom":
+      return { start: today, end: today };
     default:
-      return { start: subDays(today, 30), end: today };
+      return { start: subMonths(today, 1), end: today };
   }
 };
 
@@ -43,20 +47,24 @@ export const calculateFutureDateRange = (period: Period): DateRange => {
   const today = new Date();
   
   switch (period) {
+    case "1d":
+      return { start: today, end: addDays(today, 1) };
     case "7d":
       return { start: today, end: addDays(today, 7) };
-    case "30d":
-      return { start: today, end: addDays(today, 30) };
-    case "90d":
-      return { start: today, end: addDays(today, 90) };
+    case "14d":
+      return { start: today, end: addDays(today, 14) };
+    case "1m":
+      return { start: today, end: addMonths(today, 1) };
+    case "3m":
+      return { start: today, end: addMonths(today, 3) };
     case "6m":
       return { start: today, end: addMonths(today, 6) };
     case "1y":
       return { start: today, end: addYears(today, 1) };
-    case "all":
-      return { start: null, end: null };
+    case "custom":
+      return { start: today, end: today };
     default:
-      return { start: today, end: addDays(today, 30) };
+      return { start: today, end: addMonths(today, 1) };
   }
 };
 

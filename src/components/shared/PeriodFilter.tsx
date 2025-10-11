@@ -10,8 +10,9 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-export type Period = "7d" | "30d" | "90d" | "6m" | "1y" | "all" | "custom";
+export type Period = "1d" | "7d" | "14d" | "1m" | "3m" | "6m" | "1y" | "custom";
 
 export interface CustomDateRange {
   from: Date | undefined;
@@ -26,12 +27,13 @@ interface PeriodFilterProps {
 }
 
 const periods: { value: Period; label: string }[] = [
-  { value: "7d", label: "7 dias" },
-  { value: "30d", label: "30 dias" },
-  { value: "90d", label: "90 dias" },
-  { value: "6m", label: "6 meses" },
-  { value: "1y", label: "1 ano" },
-  { value: "all", label: "Tudo" },
+  { value: "1d", label: "1d" },
+  { value: "7d", label: "7d" },
+  { value: "14d", label: "14d" },
+  { value: "1m", label: "1m" },
+  { value: "3m", label: "3m" },
+  { value: "6m", label: "6m" },
+  { value: "1y", label: "1a" },
 ];
 
 export const PeriodFilter = ({ 
@@ -44,6 +46,7 @@ export const PeriodFilter = ({
     from: customRange?.from,
     to: customRange?.to,
   });
+  const isMobile = useIsMobile();
 
   const handleDateSelect = (range: { from: Date | undefined; to: Date | undefined } | undefined) => {
     if (range) {
@@ -55,44 +58,54 @@ export const PeriodFilter = ({
     }
   };
 
+  const getCurrentLabel = () => {
+    if (period === "custom" && date.from && date.to) {
+      return `${format(date.from, "dd/MM", { locale: ptBR })} - ${format(date.to, "dd/MM", { locale: ptBR })}`;
+    }
+    const currentPeriod = periods.find(p => p.value === period);
+    return currentPeriod?.label || "Período";
+  };
+
   return (
-    <div className="flex items-center gap-3 p-1 bg-muted/50 rounded-lg w-fit ml-auto animate-in slide-in-from-right duration-500">
-      <CalendarIcon className="h-4 w-4 text-muted-foreground ml-2" />
-      {periods.map((p) => (
+    <Popover>
+      <PopoverTrigger asChild>
         <Button
-          key={p.value}
-          variant={period === p.value ? "default" : "ghost"}
-          size="sm"
-          onClick={() => onPeriodChange(p.value)}
-          className="transition-all duration-300"
+          variant="outline"
+          size={isMobile ? "sm" : "default"}
+          className="gap-2 ml-auto"
         >
-          {p.label}
+          <CalendarIcon className="h-4 w-4" />
+          {!isMobile && <span>{getCurrentLabel()}</span>}
         </Button>
-      ))}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant={period === "custom" ? "default" : "ghost"}
-            size="sm"
-            className="transition-all duration-300"
-          >
-            <CalendarIcon className="h-4 w-4 mr-1" />
-            {period === "custom" && date.from && date.to
-              ? `${format(date.from, "dd/MM", { locale: ptBR })} - ${format(date.to, "dd/MM", { locale: ptBR })}`
-              : "Personalizado"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
-          <Calendar
-            mode="range"
-            selected={date}
-            onSelect={handleDateSelect}
-            numberOfMonths={1}
-            initialFocus
-            className={cn("p-3 pointer-events-auto")}
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-3" align="end">
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-2">
+            {periods.map((p) => (
+              <Button
+                key={p.value}
+                variant={period === p.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => onPeriodChange(p.value)}
+                className="transition-all duration-300"
+              >
+                {p.label}
+              </Button>
+            ))}
+          </div>
+          <div className="border-t pt-3">
+            <p className="text-xs text-muted-foreground mb-2">Personalizado:</p>
+            <Calendar
+              mode="range"
+              selected={date}
+              onSelect={handleDateSelect}
+              numberOfMonths={1}
+              initialFocus
+              className={cn("p-0 pointer-events-auto")}
+            />
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };

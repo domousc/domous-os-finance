@@ -53,7 +53,7 @@ export function PersonPayableView({ period }: PersonPayableViewProps) {
         .eq("status", "pending")
         .in("type", ["team", "commission"]);
 
-      if (period !== "all" && dateRange.start && dateRange.end) {
+      if (dateRange.start && dateRange.end) {
         query = query
           .gte("due_date", dateRange.start.toISOString())
           .lte("due_date", dateRange.end.toISOString());

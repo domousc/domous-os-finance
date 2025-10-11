@@ -6,7 +6,7 @@ import { FinanceTimeline } from "@/components/company/finance/FinanceTimeline";
 import { PeriodFilter, type Period } from "@/components/shared/PeriodFilter";
 
 const FinanceOverview = () => {
-  const [period, setPeriod] = useState<Period>("30d");
+  const [period, setPeriod] = useState<Period>("1m");
 
   return (
     <AppLayout

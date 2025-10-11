@@ -210,11 +210,9 @@ export function FinanceOverviewStats({ period }: FinanceOverviewStatsProps) {
           <div className="text-2xl font-bold">
             {formatCurrency(currentStats?.receivable || 0)}
           </div>
-          {period !== "all" && (
-            <p className={`text-xs ${receivableComparison.color} mt-1`}>
-              {receivableComparison.text}
-            </p>
-          )}
+          <p className={`text-xs ${receivableComparison.color} mt-1`}>
+            {receivableComparison.text}
+          </p>
         </CardContent>
       </Card>
 
@@ -227,11 +225,9 @@ export function FinanceOverviewStats({ period }: FinanceOverviewStatsProps) {
           <div className="text-2xl font-bold">
             {formatCurrency(currentStats?.payable || 0)}
           </div>
-          {period !== "all" && (
-            <p className={`text-xs ${payableComparison.color} mt-1`}>
-              {payableComparison.text}
-            </p>
-          )}
+          <p className={`text-xs ${payableComparison.color} mt-1`}>
+            {payableComparison.text}
+          </p>
         </CardContent>
       </Card>
 
@@ -244,11 +240,9 @@ export function FinanceOverviewStats({ period }: FinanceOverviewStatsProps) {
           <div className="text-2xl font-bold">
             {formatCurrency(currentStats?.operational || 0)}
           </div>
-          {period !== "all" && (
-            <p className={`text-xs ${operationalComparison.color} mt-1`}>
-              {operationalComparison.text}
-            </p>
-          )}
+          <p className={`text-xs ${operationalComparison.color} mt-1`}>
+            {operationalComparison.text}
+          </p>
         </CardContent>
       </Card>
 
@@ -261,11 +255,9 @@ export function FinanceOverviewStats({ period }: FinanceOverviewStatsProps) {
           <div className={`text-2xl font-bold ${netProjectedColor}`}>
             {formatCurrency(currentStats?.netProjected || 0)}
           </div>
-          {period !== "all" && (
-            <p className={`text-xs ${netComparison.color} mt-1`}>
-              {netComparison.text}
-            </p>
-          )}
+          <p className={`text-xs ${netComparison.color} mt-1`}>
+            {netComparison.text}
+          </p>
         </CardContent>
       </Card>
 
@@ -278,11 +270,9 @@ export function FinanceOverviewStats({ period }: FinanceOverviewStatsProps) {
           <div className="text-2xl font-bold text-destructive">
             {formatCurrency(currentStats?.overdue || 0)}
           </div>
-          {period !== "all" && (
-            <p className={`text-xs ${overdueComparison.color} mt-1`}>
-              {overdueComparison.text}
-            </p>
-          )}
+          <p className={`text-xs ${overdueComparison.color} mt-1`}>
+            {overdueComparison.text}
+          </p>
         </CardContent>
       </Card>
     </div>

@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Expenses = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [period, setPeriod] = useState<Period>("30d");
+  const [period, setPeriod] = useState<Period>("1m");
 
   useEffect(() => {
     const channel = supabase
