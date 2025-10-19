@@ -44,43 +44,44 @@ export const AppHeader = ({ title, badge, menuItems = [] }: AppHeaderProps) => {
 
   return (
     <header className="border-b border-border bg-card sticky top-0 z-10">
-      <div className="flex items-center justify-between h-16 px-6">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between h-12 px-4">
+        <div className="flex items-center gap-2">
           {/* Mobile Menu */}
           <MobileMenu menuItems={menuItems} />
           
-          <h1 className="text-2xl font-bold">{title}</h1>
+          <h1 className="text-lg font-bold">{title}</h1>
           {badge && (
-            <Badge variant="secondary" className="font-normal">
+            <Badge variant="secondary" className="text-xs font-normal px-1.5 py-0">
               {badge}
             </Badge>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
             {theme === "dark" ? (
-              <Sun className="h-5 w-5" />
+              <Sun className="h-4 w-4" />
             ) : (
-              <Moon className="h-5 w-5" />
+              <Moon className="h-4 w-4" />
             )}
           </Button>
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full" />
+              <Button variant="ghost" size="icon" className="relative h-8 w-8">
+                <Bell className="h-4 w-4" />
+                <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 bg-destructive rounded-full" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-2">
-                <h4 className="font-medium">Notificações</h4>
-                <p className="text-sm text-muted-foreground">
+            <PopoverContent className="w-72 p-3">
+              <div className="space-y-1">
+                <h4 className="text-sm font-medium">Notificações</h4>
+                <p className="text-xs text-muted-foreground">
                   Nenhuma notificação no momento
                 </p>
               </div>
@@ -89,17 +90,17 @@ export const AppHeader = ({ title, badge, menuItems = [] }: AppHeaderProps) => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar>
-                  <AvatarFallback>{getUserInitials()}</AvatarFallback>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">Minha Conta</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                <div className="flex flex-col space-y-0.5">
+                  <p className="text-xs font-medium">Minha Conta</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

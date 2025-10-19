@@ -80,12 +80,12 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="py-3">
           <div className="flex items-center justify-between">
-            <CardTitle>Lista de Despesas</CardTitle>
+            <CardTitle className="text-base">Lista de Despesas</CardTitle>
             <div className="flex gap-2">
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[140px] h-8 text-xs">
                   <SelectValue placeholder="Filtrar por tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -99,7 +99,7 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
               </Select>
 
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[140px] h-8 text-xs">
                   <SelectValue placeholder="Filtrar por status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -113,49 +113,51 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {isLoading ? (
-            <div className="text-center py-8">Carregando...</div>
+            <div className="text-center py-6 text-sm">Carregando...</div>
           ) : expenses && expenses.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    Item
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="h-3 w-3 ml-1 inline" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Descrição da despesa (ex: Software, Aluguel)</p>
-                          <p className="text-xs text-muted-foreground">
-                            Para pessoas, use a página "Time"
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Ciclo</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Vencimento</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {expenses.map((expense) => (
-                  <ExpenseRow
-                    key={expense.id}
-                    expense={expense}
-                    onEdit={handleEdit}
-                  />
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-xs h-9">
+                      Item
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="h-3 w-3 ml-1 inline" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Descrição da despesa (ex: Software, Aluguel)</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              Para pessoas, use a página "Time"
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </TableHead>
+                    <TableHead className="text-xs h-9">Tipo</TableHead>
+                    <TableHead className="text-xs h-9">Ciclo</TableHead>
+                    <TableHead className="text-xs h-9">Valor</TableHead>
+                    <TableHead className="text-xs h-9">Vencimento</TableHead>
+                    <TableHead className="text-xs h-9">Status</TableHead>
+                    <TableHead className="w-[40px] h-9"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {expenses.map((expense) => (
+                    <ExpenseRow
+                      key={expense.id}
+                      expense={expense}
+                      onEdit={handleEdit}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-6 text-sm text-muted-foreground">
               Nenhuma despesa encontrada
             </div>
           )}

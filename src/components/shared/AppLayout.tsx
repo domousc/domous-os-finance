@@ -58,8 +58,8 @@ export const AppLayout = ({
             <Button
               variant={active ? "secondary" : "ghost"}
               className={cn(
-                "w-full justify-start gap-3 transition-all overflow-hidden",
-                level > 0 && "ml-6"
+                "w-full justify-start gap-2 transition-all overflow-hidden h-9",
+                level > 0 && "ml-4"
               )}
               onClick={() => {
                 if (hasSubmenu) {
@@ -69,10 +69,10 @@ export const AppLayout = ({
                 }
               }}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className="h-4 w-4 shrink-0" />
               <span 
                 className={cn(
-                  "truncate transition-all duration-300",
+                  "truncate transition-all duration-300 text-sm",
                   isHovered ? "opacity-100 w-auto" : "opacity-0 w-0"
                 )}
               >
@@ -105,19 +105,19 @@ export const AppLayout = ({
         <aside
           className={cn(
             "hidden md:flex border-r border-border bg-card transition-all duration-300 flex-col",
-            isHovered ? "w-64" : "w-20",
+            isHovered ? "w-56" : "w-16",
             !isHovered && "overflow-hidden"
           )}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
             {menuItems.map((item) => renderMenuItem(item))}
           </nav>
         </aside>
 
         <main className="flex-1 overflow-y-auto bg-background">
-          <div className="container mx-auto p-6">{children}</div>
+          <div className="container mx-auto p-4">{children}</div>
         </main>
       </div>
 
