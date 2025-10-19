@@ -49,21 +49,20 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     console.log("[SubscriptionContext] Effect triggered", { user: !!user, isSuperAdmin, roleLoading });
     
-    // CRITICAL: Verificação de superadmin ANTES de qualquer coisa
-    if (!roleLoading) {
-      if (isSuperAdmin) {
-        console.log("[SubscriptionContext] User is superadmin - no subscription needed");
-        // Superadmin não precisa de assinatura
-        setSubscription(null);
-        setPlan(null);
-        setLoading(false);
-        return;
-      }
-    }
-
-    // Se ainda está carregando role, espera
+    // Se ainda está carregando role, espera e mantém loading
     if (roleLoading) {
       console.log("[SubscriptionContext] Waiting for role to load...");
+      setLoading(true);
+      return;
+    }
+
+    // CRITICAL: Verificação de superadmin ANTES de qualquer coisa
+    if (isSuperAdmin) {
+      console.log("[SubscriptionContext] User is superadmin - no subscription needed");
+      // Superadmin não precisa de assinatura
+      setSubscription(null);
+      setPlan(null);
+      setLoading(false);
       return;
     }
 
@@ -78,6 +77,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 
     const fetchSubscription = async () => {
       console.log("[SubscriptionContext] Fetching subscription for user:", user.id);
+      setLoading(true); // CRITICAL: Mantém loading enquanto busca
+      
       try {
         // Get user's company_id
         const { data: profile } = await supabase
