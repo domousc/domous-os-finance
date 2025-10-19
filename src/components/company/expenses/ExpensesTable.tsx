@@ -15,7 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { Info, Inbox } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/select";
 import { ExpenseRow } from "./ExpenseRow";
 import { ExpenseDialog } from "./ExpenseDialog";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import type { Period } from "@/components/shared/PeriodFilter";
 import { calculateDateRange } from "@/lib/dateFilters";
 
@@ -77,6 +79,8 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
     setSelectedExpense(null);
   };
 
+  const isEmpty = !isLoading && (!expenses || expenses.length === 0);
+
   return (
     <>
       <Card>
@@ -114,9 +118,20 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {isLoading ? (
-            <div className="text-center py-6 text-sm">Carregando...</div>
-          ) : expenses && expenses.length > 0 ? (
+          {isEmpty ? (
+            <EmptyState
+              icon={Inbox}
+              title="Nenhuma despesa encontrada"
+              description="Comece adicionando sua primeira despesa operacional para acompanhar seus gastos."
+              action={{
+                label: "Nova Despesa",
+                onClick: () => {
+                  setSelectedExpense({});
+                  setDialogOpen(true);
+                }
+              }}
+            />
+          ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -146,19 +161,19 @@ export const ExpensesTable = ({ period }: ExpensesTableProps) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {expenses.map((expense) => (
-                    <ExpenseRow
-                      key={expense.id}
-                      expense={expense}
-                      onEdit={handleEdit}
-                    />
-                  ))}
+                  {isLoading ? (
+                    <TableSkeleton columns={7} rows={5} />
+                  ) : (
+                    expenses?.map((expense) => (
+                      <ExpenseRow
+                        key={expense.id}
+                        expense={expense}
+                        onEdit={handleEdit}
+                      />
+                    ))
+                  )}
                 </TableBody>
               </Table>
-            </div>
-          ) : (
-            <div className="text-center py-6 text-sm text-muted-foreground">
-              Nenhuma despesa encontrada
             </div>
           )}
         </CardContent>

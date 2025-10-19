@@ -129,9 +129,9 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
   });
 
   return (
-    <TableRow>
+    <TableRow className="group hover:bg-muted/50 transition-colors">
       <TableCell>
-        <div className="font-medium">
+        <div className="font-medium text-sm">
           {expense.item}
           {expense.total_installments > 1 && (
             <span className="ml-2 text-xs text-muted-foreground">
@@ -140,17 +140,17 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
           )}
         </div>
         {expense.category && (
-          <div className="text-sm text-muted-foreground">{expense.category}</div>
+          <div className="text-xs text-muted-foreground">{expense.category}</div>
         )}
       </TableCell>
       <TableCell>
-        <Badge variant="outline">{typeLabels[expense.type]}</Badge>
+        <Badge variant="outline" className="text-xs">{typeLabels[expense.type]}</Badge>
       </TableCell>
       <TableCell>
-        <Badge variant="secondary">{billingCycleLabels[expense.billing_cycle]}</Badge>
+        <Badge variant="secondary" className="text-xs">{billingCycleLabels[expense.billing_cycle]}</Badge>
       </TableCell>
       <TableCell>
-        <div>
+        <div className="text-sm font-medium">
           {new Intl.NumberFormat("pt-BR", {
             style: "currency",
             currency: "BRL",
@@ -165,20 +165,24 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
           </div>
         )}
       </TableCell>
-      <TableCell>{format(new Date(expense.due_date), "dd/MM/yyyy")}</TableCell>
+      <TableCell className="text-sm">{format(new Date(expense.due_date), "dd/MM/yyyy")}</TableCell>
       <TableCell>
-        <Badge variant={statusLabels[expense.status].variant}>
+        <Badge variant={statusLabels[expense.status].variant} className="text-xs">
           {statusLabels[expense.status].label}
         </Badge>
       </TableCell>
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-48">
             {expense.status === "pending" && (
               <DropdownMenuItem onClick={() => markAsPaid.mutate()}>
                 <CheckCircle className="mr-2 h-4 w-4" />

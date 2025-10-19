@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatsSkeleton } from "@/components/shared/StatsSkeleton";
 import { DollarSign, AlertCircle, Calendar, RefreshCw } from "lucide-react";
 import type { Period } from "@/components/shared/PeriodFilter";
 import { calculateDateRange, calculateComparisonRange, countRecurrenceInPeriod, formatComparison } from "@/lib/dateFilters";
@@ -15,7 +16,7 @@ export function ExpensesStats({ period }: ExpensesStatsProps) {
   const dateRange = calculateDateRange(period);
   const comparisonRange = calculateComparisonRange(period);
 
-  const { data: currentStats } = useQuery({
+  const { data: currentStats, isLoading } = useQuery({
     queryKey: ["expenses-stats", user?.id, period],
     queryFn: async () => {
       let query = supabase
@@ -118,9 +119,13 @@ export function ExpensesStats({ period }: ExpensesStatsProps) {
     true
   );
 
+  if (isLoading) {
+    return <StatsSkeleton count={4} />;
+  }
+
   return (
     <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
+      <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-default">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 pt-3">
           <CardTitle className="text-xs font-medium">Total Pendente</CardTitle>
           <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
@@ -135,7 +140,7 @@ export function ExpensesStats({ period }: ExpensesStatsProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-default">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 pt-3">
           <CardTitle className="text-xs font-medium">Em Atraso</CardTitle>
           <AlertCircle className="h-3.5 w-3.5 text-destructive" />
@@ -150,7 +155,7 @@ export function ExpensesStats({ period }: ExpensesStatsProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-default">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 pt-3">
           <CardTitle className="text-xs font-medium">Recorrência Mensal</CardTitle>
           <Calendar className="h-3.5 w-3.5 text-blue-500" />
@@ -163,7 +168,7 @@ export function ExpensesStats({ period }: ExpensesStatsProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-default">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 pt-3">
           <CardTitle className="text-xs font-medium">Assinaturas Ativas</CardTitle>
           <RefreshCw className="h-3.5 w-3.5 text-purple-500" />
