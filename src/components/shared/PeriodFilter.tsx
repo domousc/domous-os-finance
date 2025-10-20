@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Check } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -46,15 +46,26 @@ export const PeriodFilter = ({
     from: customRange?.from,
     to: customRange?.to,
   });
+  const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (customRange) {
+      setDate({ from: customRange.from, to: customRange.to });
+    }
+  }, [customRange]);
 
   const handleDateSelect = (range: { from: Date | undefined; to: Date | undefined } | undefined) => {
     if (range) {
       setDate(range);
-      if (range.from && range.to && onCustomRangeChange) {
-        onCustomRangeChange(range);
-        onPeriodChange("custom");
-      }
+    }
+  };
+
+  const handleApplyCustomRange = () => {
+    if (date.from && date.to && onCustomRangeChange) {
+      onCustomRangeChange(date);
+      onPeriodChange("custom");
+      setIsOpen(false);
     }
   };
 
@@ -67,7 +78,7 @@ export const PeriodFilter = ({
   };
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -86,7 +97,10 @@ export const PeriodFilter = ({
                 key={p.value}
                 variant={period === p.value ? "default" : "outline"}
                 size="sm"
-                onClick={() => onPeriodChange(p.value)}
+                onClick={() => {
+                  onPeriodChange(p.value);
+                  setIsOpen(false);
+                }}
                 className="transition-all duration-300"
               >
                 {p.label}
@@ -103,6 +117,21 @@ export const PeriodFilter = ({
               initialFocus
               className={cn("p-0 pointer-events-auto")}
             />
+            {date.from && date.to && (
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {format(date.from, "dd/MM/yyyy", { locale: ptBR })} - {format(date.to, "dd/MM/yyyy", { locale: ptBR })}
+                </p>
+                <Button
+                  size="sm"
+                  onClick={handleApplyCustomRange}
+                  className="gap-1"
+                >
+                  <Check className="h-3 w-3" />
+                  Aplicar
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </PopoverContent>
