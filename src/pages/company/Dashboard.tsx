@@ -67,11 +67,11 @@ export default function Dashboard() {
           />
         </div>
 
-        <FinanceOverviewStats period={period} />
+        <FinanceOverviewStats period={period} customRange={customRange} />
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <ReceivablesList period={period} />
-          <PayablesList period={period} />
+          <ReceivablesList period={period} customRange={customRange} />
+          <PayablesList period={period} customRange={customRange} />
         </div>
 
         <QuickActions />

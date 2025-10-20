@@ -4,15 +4,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle, Calendar, Activity } from "lucide-react";
 import type { Period } from "@/components/shared/PeriodFilter";
-import { calculateFutureDateRange, calculateComparisonRange, countRecurrenceInPeriod, formatComparison } from "@/lib/dateFilters";
+import { calculateDateRange, calculateComparisonRange, countRecurrenceInPeriod, formatComparison } from "@/lib/dateFilters";
 
 interface FinanceOverviewStatsProps {
   period: Period;
+  customRange?: { from: Date; to: Date };
 }
 
-export function FinanceOverviewStats({ period }: FinanceOverviewStatsProps) {
+export function FinanceOverviewStats({ period, customRange }: FinanceOverviewStatsProps) {
   const { user } = useAuth();
-  const dateRange = calculateFutureDateRange(period);
+  const baseRange = calculateDateRange(period);
+  const dateRange = customRange?.from && customRange?.to && period === "custom"
+    ? { start: customRange.from, end: customRange.to }
+    : baseRange;
   const comparisonRange = calculateComparisonRange(period);
   const { data: currentStats } = useQuery({
     queryKey: ["finance-overview-stats", user?.id, period],

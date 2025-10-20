@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { calculateFutureDateRange } from "@/lib/dateFilters";
+import { calculateDateRange } from "@/lib/dateFilters";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,17 +14,21 @@ import { TrendingDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { Period } from "@/components/shared/PeriodFilter";
+import type { Period, CustomDateRange } from "@/components/shared/PeriodFilter";
 
 interface PayablesListProps {
   period: Period;
+  customRange?: CustomDateRange;
 }
 
-export const PayablesList = ({ period }: PayablesListProps) => {
+export const PayablesList = ({ period, customRange }: PayablesListProps) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [typeFilter, setTypeFilter] = useState<string>("all");
-  const dateRange = calculateFutureDateRange(period);
+  const baseRange = calculateDateRange(period);
+  const dateRange = customRange?.from && customRange?.to && period === "custom"
+    ? { start: customRange.from, end: customRange.to }
+    : baseRange;
 
   const { data: payables, isLoading } = useQuery({
     queryKey: ["dashboard-payables", user?.id, period, typeFilter],
