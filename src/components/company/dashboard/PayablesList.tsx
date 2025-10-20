@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EditableValueCell } from "./EditableValueCell";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { SwipeableRow } from "@/components/shared/SwipeableRow";
+import { RescheduleDialog } from "@/components/shared/RescheduleDialog";
 import { TrendingDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -25,6 +27,7 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [rescheduleDialog, setRescheduleDialog] = useState<{ open: boolean; payableId: string; currentDate: Date; type: string } | null>(null);
   const baseRange = calculateDateRange(period);
   const dateRange = customRange?.from && customRange?.to && period === "custom"
     ? { start: customRange.from, end: customRange.to }
@@ -115,6 +118,101 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
     queryClient.invalidateQueries({ queryKey: ["dashboard-payables"] });
   };
 
+  const handleMarkAsPaid = async (payableId: string, type: string) => {
+    let error;
+
+    switch (type) {
+      case "commission":
+        const { error: commError } = await supabase
+          .from("partner_commissions")
+          .update({ status: "paid", paid_date: new Date().toISOString() })
+          .eq("id", payableId);
+        error = commError;
+        break;
+      case "expense":
+        const { error: expError } = await supabase
+          .from("company_expenses")
+          .update({ status: "paid", paid_date: new Date().toISOString() })
+          .eq("id", payableId);
+        error = expError;
+        break;
+      case "salary":
+        const { error: salError } = await supabase
+          .from("team_payments")
+          .update({ status: "paid", paid_date: new Date().toISOString() })
+          .eq("id", payableId);
+        error = salError;
+        break;
+      default:
+        return;
+    }
+
+    if (error) {
+      toast({
+        title: "Erro ao marcar como pago",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Marcado como pago",
+      description: "O pagamento foi marcado como pago com sucesso.",
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["dashboard-payables"] });
+  };
+
+  const handleReschedule = async (newDate: Date) => {
+    if (!rescheduleDialog) return;
+
+    let error;
+
+    switch (rescheduleDialog.type) {
+      case "commission":
+        const { error: commError } = await supabase
+          .from("partner_commissions")
+          .update({ scheduled_payment_date: format(newDate, "yyyy-MM-dd") })
+          .eq("id", rescheduleDialog.payableId);
+        error = commError;
+        break;
+      case "expense":
+        const { error: expError } = await supabase
+          .from("company_expenses")
+          .update({ due_date: newDate.toISOString() })
+          .eq("id", rescheduleDialog.payableId);
+        error = expError;
+        break;
+      case "salary":
+        const { error: salError } = await supabase
+          .from("team_payments")
+          .update({ due_date: newDate.toISOString() })
+          .eq("id", rescheduleDialog.payableId);
+        error = salError;
+        break;
+      default:
+        return;
+    }
+
+    if (error) {
+      toast({
+        title: "Erro ao reagendar",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Reagendado com sucesso",
+      description: "A data de vencimento foi atualizada.",
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["dashboard-payables"] });
+    setRescheduleDialog(null);
+  };
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "paid":
@@ -196,35 +294,55 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
               </TableRow>
             ) : (
               payables.map((payable) => (
-                <TableRow key={payable.id} className="h-11 group">
-                  <TableCell>
-                    <Badge variant="outline" className="text-[10px] px-2 py-0">
-                      {getTypeLabel(payable.type)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs font-medium">
-                    {payable.description}
-                  </TableCell>
-                  <TableCell>
-                    <EditableValueCell
-                      value={payable.amount}
-                      onSave={(newValue) => handleUpdateAmount(payable.id, payable.type, newValue)}
-                    />
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    {format(new Date(payable.due_date), "dd/MM/yyyy", { locale: ptBR })}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(payable.status)} className="text-[10px] px-2 py-0">
-                      {getStatusLabel(payable.status)}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
+                <SwipeableRow
+                  key={payable.id}
+                  onMarkAsPaid={() => handleMarkAsPaid(payable.id, payable.type)}
+                  onReschedule={() => setRescheduleDialog({
+                    open: true,
+                    payableId: payable.id,
+                    currentDate: new Date(payable.due_date),
+                    type: payable.type
+                  })}
+                  disabled={payable.status === "paid"}
+                >
+                  <TableRow className="h-11 group">
+                    <TableCell>
+                      <Badge variant="outline" className="text-[10px] px-2 py-0">
+                        {getTypeLabel(payable.type)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs font-medium">
+                      {payable.description}
+                    </TableCell>
+                    <TableCell>
+                      <EditableValueCell
+                        value={payable.amount}
+                        onSave={(newValue) => handleUpdateAmount(payable.id, payable.type, newValue)}
+                      />
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {format(new Date(payable.due_date), "dd/MM/yyyy", { locale: ptBR })}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusVariant(payable.status)} className="text-[10px] px-2 py-0">
+                        {getStatusLabel(payable.status)}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                </SwipeableRow>
               ))
             )}
           </TableBody>
         </Table>
       </CardContent>
+      {rescheduleDialog && (
+        <RescheduleDialog
+          open={rescheduleDialog.open}
+          onOpenChange={(open) => !open && setRescheduleDialog(null)}
+          onConfirm={handleReschedule}
+          currentDate={rescheduleDialog.currentDate}
+        />
+      )}
     </Card>
   );
 };

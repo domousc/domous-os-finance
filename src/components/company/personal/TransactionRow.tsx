@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { SwipeableRow } from "@/components/shared/SwipeableRow";
+import { RescheduleDialog } from "@/components/shared/RescheduleDialog";
 import { useState } from "react";
 
 interface TransactionRowProps {
@@ -27,6 +29,7 @@ export const TransactionRow = ({ transaction, onEdit }: TransactionRowProps) => 
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [rescheduleDialog, setRescheduleDialog] = useState<{ open: boolean; currentDate: Date } | null>(null);
 
   const markAsPaidMutation = useMutation({
     mutationFn: async () => {
@@ -86,66 +89,173 @@ export const TransactionRow = ({ transaction, onEdit }: TransactionRowProps) => 
     },
   });
 
+  const handleReschedule = async (newDate: Date) => {
+    const { error } = await supabase
+      .from("personal_transactions")
+      .update({ due_date: newDate.toISOString() })
+      .eq("id", transaction.id);
+    
+    if (error) {
+      toast({
+        title: "Erro ao reagendar",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Reagendado com sucesso",
+      description: "A data de vencimento foi atualizada.",
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["personal-transactions"] });
+    queryClient.invalidateQueries({ queryKey: ["personal-finance-stats"] });
+    setRescheduleDialog(null);
+  };
+
+  // Only show swipe actions for "A Pagar" (payable) transactions
+  const isPayable = transaction.type === "payable";
+
   return (
     <>
-      <TableRow>
-        <TableCell>{format(new Date(transaction.due_date), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
-        <TableCell>
-          <Badge variant={transaction.type === "receivable" ? "default" : "destructive"}>
-            {transaction.type === "receivable" ? "A Receber" : "A Pagar"}
-          </Badge>
-        </TableCell>
-        <TableCell className="font-medium">{transaction.description}</TableCell>
-        <TableCell>{transaction.category || "-"}</TableCell>
-        <TableCell className="text-right font-bold">
-          {Number(transaction.amount).toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
+      {isPayable ? (
+        <SwipeableRow
+          onMarkAsPaid={() => markAsPaidMutation.mutate()}
+          onReschedule={() => setRescheduleDialog({
+            open: true,
+            currentDate: new Date(transaction.due_date)
           })}
-        </TableCell>
-        <TableCell>
-          <Badge className={STATUS_MAP[transaction.status as keyof typeof STATUS_MAP].color}>
-            {STATUS_MAP[transaction.status as keyof typeof STATUS_MAP].label}
-          </Badge>
-        </TableCell>
-        <TableCell>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {transaction.status === "pending" && (
-                <DropdownMenuItem onClick={() => markAsPaidMutation.mutate()}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Marcar como Pago
+          disabled={transaction.status === "paid"}
+        >
+          <TableRow>
+            <TableCell>{format(new Date(transaction.due_date), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+            <TableCell>
+              <Badge variant={transaction.type === "receivable" ? "default" : "destructive"}>
+                {transaction.type === "receivable" ? "A Receber" : "A Pagar"}
+              </Badge>
+            </TableCell>
+            <TableCell className="font-medium">{transaction.description}</TableCell>
+            <TableCell>{transaction.category || "-"}</TableCell>
+            <TableCell className="text-right font-bold">
+              {Number(transaction.amount).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </TableCell>
+            <TableCell>
+              <Badge className={STATUS_MAP[transaction.status as keyof typeof STATUS_MAP].color}>
+                {STATUS_MAP[transaction.status as keyof typeof STATUS_MAP].label}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {transaction.status === "pending" && (
+                    <DropdownMenuItem onClick={() => markAsPaidMutation.mutate()}>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Marcar como Pago
+                    </DropdownMenuItem>
+                  )}
+                  {transaction.status === "paid" && (
+                    <DropdownMenuItem onClick={() => markAsPendingMutation.mutate()}>
+                      <X className="mr-2 h-4 w-4" />
+                      Voltar para Pendente
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => onEdit(transaction)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Editar
+                  </DropdownMenuItem>
+                  {transaction.status === "pending" && (
+                    <DropdownMenuItem onClick={() => cancelMutation.mutate()}>
+                      <X className="mr-2 h-4 w-4" />
+                      Cancelar
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive">
+                    <Trash className="mr-2 h-4 w-4" />
+                    Excluir
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        </SwipeableRow>
+      ) : (
+        <TableRow>
+          <TableCell>{format(new Date(transaction.due_date), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+          <TableCell>
+            <Badge variant={transaction.type === "receivable" ? "default" : "destructive"}>
+              {transaction.type === "receivable" ? "A Receber" : "A Pagar"}
+            </Badge>
+          </TableCell>
+          <TableCell className="font-medium">{transaction.description}</TableCell>
+          <TableCell>{transaction.category || "-"}</TableCell>
+          <TableCell className="text-right font-bold">
+            {Number(transaction.amount).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </TableCell>
+          <TableCell>
+            <Badge className={STATUS_MAP[transaction.status as keyof typeof STATUS_MAP].color}>
+              {STATUS_MAP[transaction.status as keyof typeof STATUS_MAP].label}
+            </Badge>
+          </TableCell>
+          <TableCell>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {transaction.status === "pending" && (
+                  <DropdownMenuItem onClick={() => markAsPaidMutation.mutate()}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Marcar como Pago
+                  </DropdownMenuItem>
+                )}
+                {transaction.status === "paid" && (
+                  <DropdownMenuItem onClick={() => markAsPendingMutation.mutate()}>
+                    <X className="mr-2 h-4 w-4" />
+                    Voltar para Pendente
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => onEdit(transaction)}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
                 </DropdownMenuItem>
-              )}
-              {transaction.status === "paid" && (
-                <DropdownMenuItem onClick={() => markAsPendingMutation.mutate()}>
-                  <X className="mr-2 h-4 w-4" />
-                  Voltar para Pendente
+                {transaction.status === "pending" && (
+                  <DropdownMenuItem onClick={() => cancelMutation.mutate()}>
+                    <X className="mr-2 h-4 w-4" />
+                    Cancelar
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive">
+                  <Trash className="mr-2 h-4 w-4" />
+                  Excluir
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onEdit(transaction)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              {transaction.status === "pending" && (
-                <DropdownMenuItem onClick={() => cancelMutation.mutate()}>
-                  <X className="mr-2 h-4 w-4" />
-                  Cancelar
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive">
-                <Trash className="mr-2 h-4 w-4" />
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TableCell>
-      </TableRow>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableCell>
+        </TableRow>
+      )}
+
+      {rescheduleDialog && (
+        <RescheduleDialog
+          open={rescheduleDialog.open}
+          onOpenChange={(open) => !open && setRescheduleDialog(null)}
+          onConfirm={handleReschedule}
+          currentDate={rescheduleDialog.currentDate}
+        />
+      )}
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

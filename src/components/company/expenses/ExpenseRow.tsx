@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,8 @@ import { MoreHorizontal, CheckCircle, Edit, Trash2, XCircle, X } from "lucide-re
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { SwipeableRow } from "@/components/shared/SwipeableRow";
+import { RescheduleDialog } from "@/components/shared/RescheduleDialog";
 import { format } from "date-fns";
 
 interface ExpenseRowProps {
@@ -21,6 +24,7 @@ interface ExpenseRowProps {
 export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [rescheduleDialog, setRescheduleDialog] = useState<{ open: boolean; currentDate: Date } | null>(null);
 
   const typeLabels: Record<string, string> = {
     subscription: "Assinatura",
@@ -128,8 +132,41 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
     },
   });
 
+  const handleReschedule = async (newDate: Date) => {
+    const { error } = await supabase
+      .from("company_expenses")
+      .update({ due_date: newDate.toISOString() })
+      .eq("id", expense.id);
+    
+    if (error) {
+      toast({
+        title: "Erro ao reagendar",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Reagendado com sucesso",
+      description: "A data de vencimento foi atualizada.",
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["company-expenses"] });
+    setRescheduleDialog(null);
+  };
+
   return (
-    <TableRow className="group hover:bg-muted/50 transition-colors">
+    <>
+      <SwipeableRow
+        onMarkAsPaid={() => markAsPaid.mutate()}
+        onReschedule={() => setRescheduleDialog({
+          open: true,
+          currentDate: new Date(expense.due_date)
+        })}
+        disabled={expense.status === "paid"}
+      >
+        <TableRow className="group hover:bg-muted/50 transition-colors">
       <TableCell>
         <div className="font-medium text-sm">
           {expense.item}
@@ -216,5 +253,16 @@ export const ExpenseRow = ({ expense, onEdit }: ExpenseRowProps) => {
         </DropdownMenu>
       </TableCell>
     </TableRow>
+      </SwipeableRow>
+
+      {rescheduleDialog && (
+        <RescheduleDialog
+          open={rescheduleDialog.open}
+          onOpenChange={(open) => !open && setRescheduleDialog(null)}
+          onConfirm={handleReschedule}
+          currentDate={rescheduleDialog.currentDate}
+        />
+      )}
+    </>
   );
 };

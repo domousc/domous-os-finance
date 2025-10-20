@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SwipeableRow } from "@/components/shared/SwipeableRow";
+import { RescheduleDialog } from "@/components/shared/RescheduleDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +46,7 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
   const [items, setItems] = useState<PayableItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
+  const [rescheduleDialog, setRescheduleDialog] = useState<{ open: boolean; itemId: string; currentDate: Date } | null>(null);
 
   const fetchPayableItems = async () => {
     if (!user) return;
@@ -164,6 +167,34 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
     }
   };
 
+  const handleReschedule = async (newDate: Date) => {
+    if (!rescheduleDialog) return;
+
+    try {
+      const { error } = await supabase
+        .from("payables")
+        .update({ due_date: newDate.toISOString() })
+        .eq("id", rescheduleDialog.itemId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Reagendado com sucesso",
+        description: "A data de vencimento foi atualizada.",
+      });
+      
+      fetchPayableItems();
+      setRescheduleDialog(null);
+    } catch (error: any) {
+      console.error("Error rescheduling:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível reagendar.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDelete = async (item: PayableItem) => {
     try {
       // Delete from payables table
@@ -257,65 +288,76 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
                 </TableRow>
               ) : (
                 filteredItems.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{getTypeBadge(item.type)}</TableCell>
-                    <TableCell className="font-medium">{item.description}</TableCell>
-                    <TableCell>{item.category || "-"}</TableCell>
-                    <TableCell>
-                      {item.dueDate.toLocaleDateString("pt-BR")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={item.status === "pending" ? "destructive" : "default"}>
-                        {item.status === "pending" ? "Pendente" : "Pago"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {item.amount.toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {item.status === "pending" && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarkAsPaid(item.id)}
-                          >
-                            Marcar como pago
-                          </Button>
-                        )}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                  <SwipeableRow
+                    key={item.id}
+                    onMarkAsPaid={() => handleMarkAsPaid(item.id)}
+                    onReschedule={() => setRescheduleDialog({
+                      open: true,
+                      itemId: item.id,
+                      currentDate: item.dueDate
+                    })}
+                    disabled={item.status === "paid"}
+                  >
+                    <TableRow>
+                      <TableCell>{getTypeBadge(item.type)}</TableCell>
+                      <TableCell className="font-medium">{item.description}</TableCell>
+                      <TableCell>{item.category || "-"}</TableCell>
+                      <TableCell>
+                        {item.dueDate.toLocaleDateString("pt-BR")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={item.status === "pending" ? "destructive" : "default"}>
+                          {item.status === "pending" ? "Pendente" : "Pago"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {item.amount.toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          {item.status === "pending" && (
                             <Button
-                              variant="ghost"
                               size="sm"
-                              className="text-destructive hover:text-destructive"
+                              onClick={() => handleMarkAsPaid(item.id)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              Marcar como pago
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita e o item será removido de todas as páginas.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(item)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          )}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
                               >
-                                Excluir
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita e o item será removido de todas as páginas.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(item)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </SwipeableRow>
                 ))
               )}
             </TableBody>
@@ -334,6 +376,15 @@ export function PayableItemsTable({ period }: PayableItemsTableProps) {
           </div>
         )}
       </TabsContent>
+
+      {rescheduleDialog && (
+        <RescheduleDialog
+          open={rescheduleDialog.open}
+          onOpenChange={(open) => !open && setRescheduleDialog(null)}
+          onConfirm={handleReschedule}
+          currentDate={rescheduleDialog.currentDate}
+        />
+      )}
     </Tabs>
   );
 }
