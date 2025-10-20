@@ -9,13 +9,14 @@ import { FinanceOverviewStats } from "@/components/company/finance/FinanceOvervi
 import { ReceivablesList } from "@/components/company/dashboard/ReceivablesList";
 import { PayablesList } from "@/components/company/dashboard/PayablesList";
 import { QuickActions } from "@/components/company/dashboard/QuickActions";
-import { PeriodFilter, type Period } from "@/components/shared/PeriodFilter";
+import { PeriodFilter, type Period, type CustomDateRange } from "@/components/shared/PeriodFilter";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { isSuperAdmin, loading: roleLoading } = useRole();
   const { loading, hasActiveSubscription } = useSubscription();
   const [period, setPeriod] = useState<Period>("1m");
+  const [customRange, setCustomRange] = useState<CustomDateRange>();
 
   // Superadmin deve ser redirecionado para o painel de superadmin
   useEffect(() => {
@@ -58,7 +59,12 @@ export default function Dashboard() {
               Acompanhe suas métricas financeiras e gerencie seus recebimentos e pagamentos
             </p>
           </div>
-          <PeriodFilter period={period} onPeriodChange={setPeriod} />
+          <PeriodFilter 
+            period={period} 
+            onPeriodChange={setPeriod}
+            customRange={customRange}
+            onCustomRangeChange={setCustomRange}
+          />
         </div>
 
         <FinanceOverviewStats period={period} />

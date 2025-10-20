@@ -62,8 +62,10 @@ export const PeriodFilter = ({
   };
 
   const handleApplyCustomRange = () => {
-    if (date.from && date.to && onCustomRangeChange) {
-      onCustomRangeChange(date);
+    if (date.from && date.to) {
+      if (onCustomRangeChange) {
+        onCustomRangeChange(date);
+      }
       onPeriodChange("custom");
       setIsOpen(false);
     }
