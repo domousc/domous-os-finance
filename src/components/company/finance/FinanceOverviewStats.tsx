@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, TrendingUp, TrendingDown, AlertCircle, Calendar, Activity } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, AlertCircle, Calendar, Activity, Users } from "lucide-react";
 import type { Period } from "@/components/shared/PeriodFilter";
 import { calculateDateRange, calculateComparisonRange, countRecurrenceInPeriod, formatComparison } from "@/lib/dateFilters";
 
@@ -33,6 +33,10 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
         .from("company_expenses")
         .select("status, amount, due_date, billing_cycle");
 
+      let teamPaymentsQuery = supabase
+        .from("team_payments")
+        .select("status, amount, due_date, paid_date");
+
       if (dateRange.start && dateRange.end) {
         invoicesQuery = invoicesQuery
           .gte("due_date", dateRange.start.toISOString())
@@ -45,21 +49,28 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
         expensesQuery = expensesQuery
           .gte("due_date", dateRange.start.toISOString())
           .lte("due_date", dateRange.end.toISOString());
+
+        teamPaymentsQuery = teamPaymentsQuery
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
       }
 
       const [
         { data: invoices, error: invoicesError },
         { data: commissions, error: commissionsError },
         { data: expenses, error: expensesError },
+        { data: teamPayments, error: teamPaymentsError },
       ] = await Promise.all([
         invoicesQuery,
         commissionsQuery,
         expensesQuery,
+        teamPaymentsQuery,
       ]);
 
       if (invoicesError) throw invoicesError;
       if (commissionsError) throw commissionsError;
       if (expensesError) throw expensesError;
+      if (teamPaymentsError) throw teamPaymentsError;
 
       const receivable = (invoices || [])
         .filter((i) => i.status === "pending" || i.status === "overdue")
@@ -76,7 +87,15 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
           return sum + Number(e.amount) * count;
         }, 0);
 
-      const payable = commissionsPayable + operational;
+      const teamPayroll = (teamPayments || [])
+        .filter((t) => t.status === "pending" || t.status === "overdue")
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const teamPayrollPaid = (teamPayments || [])
+        .filter((t) => t.status === "paid")
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const payable = commissionsPayable + operational + teamPayroll;
 
       const overdue = (invoices || [])
         .filter((i) => i.status === "overdue")
@@ -86,7 +105,10 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
           .reduce((sum, e) => {
             const count = countRecurrenceInPeriod(e.billing_cycle, dateRange.start, dateRange.end);
             return sum + Number(e.amount) * count;
-          }, 0);
+          }, 0) +
+        (teamPayments || [])
+          .filter((t) => t.status === "overdue")
+          .reduce((sum, t) => sum + Number(t.amount), 0);
 
       const netProjected = receivable - payable;
 
@@ -94,6 +116,8 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
         receivable,
         payable,
         operational,
+        teamPayroll,
+        teamPayrollPaid,
         netProjected,
         overdue,
       };
@@ -110,6 +134,7 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
         { data: invoices, error: invoicesError },
         { data: commissions, error: commissionsError },
         { data: expenses, error: expensesError },
+        { data: teamPayments, error: teamPaymentsError },
       ] = await Promise.all([
         supabase
           .from("invoices")
@@ -126,11 +151,17 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
           .select("status, amount, due_date, billing_cycle")
           .gte("due_date", comparisonRange.start.toISOString())
           .lte("due_date", comparisonRange.end.toISOString()),
+        supabase
+          .from("team_payments")
+          .select("status, amount, due_date, paid_date")
+          .gte("due_date", comparisonRange.start.toISOString())
+          .lte("due_date", comparisonRange.end.toISOString()),
       ]);
 
       if (invoicesError) throw invoicesError;
       if (commissionsError) throw commissionsError;
       if (expensesError) throw expensesError;
+      if (teamPaymentsError) throw teamPaymentsError;
 
       const receivable = (invoices || [])
         .filter((i) => i.status === "pending" || i.status === "overdue")
@@ -147,7 +178,15 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
           return sum + Number(e.amount) * count;
         }, 0);
 
-      const payable = commissionsPayable + operational;
+      const teamPayroll = (teamPayments || [])
+        .filter((t) => t.status === "pending" || t.status === "overdue")
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const teamPayrollPaid = (teamPayments || [])
+        .filter((t) => t.status === "paid")
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const payable = commissionsPayable + operational + teamPayroll;
       const netProjected = receivable - payable;
 
       const overdue = (invoices || [])
@@ -158,9 +197,12 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
           .reduce((sum, e) => {
             const count = countRecurrenceInPeriod(e.billing_cycle, comparisonRange.start, comparisonRange.end);
             return sum + Number(e.amount) * count;
-          }, 0);
+          }, 0) +
+        (teamPayments || [])
+          .filter((t) => t.status === "overdue")
+          .reduce((sum, t) => sum + Number(t.amount), 0);
 
-      return { receivable, payable, operational, netProjected, overdue };
+      return { receivable, payable, operational, teamPayroll, teamPayrollPaid, netProjected, overdue };
     },
     enabled: !!user && !!comparisonRange.start,
   });
@@ -195,6 +237,12 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
     false
   );
 
+  const teamPayrollComparison = formatComparison(
+    currentStats?.teamPayroll || 0,
+    previousStats?.teamPayroll || 0,
+    true
+  );
+
   const overdueComparison = formatComparison(
     currentStats?.overdue || 0,
     previousStats?.overdue || 0,
@@ -204,7 +252,7 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
   const netProjectedColor = (currentStats?.netProjected || 0) >= 0 ? "text-green-600" : "text-destructive";
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{/* Changed to 4 columns on xl screens */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">A Receber</CardTitle>
@@ -261,6 +309,24 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
           </div>
           <p className={`text-xs ${netComparison.color} mt-1`}>
             {netComparison.text}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Folha de Pagamento</CardTitle>
+          <Users className="h-4 w-4 text-blue-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatCurrency(currentStats?.teamPayroll || 0)}
+          </div>
+          <p className={`text-xs ${teamPayrollComparison.color} mt-1`}>
+            {teamPayrollComparison.text}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Pago: {formatCurrency(currentStats?.teamPayrollPaid || 0)}
           </p>
         </CardContent>
       </Card>
