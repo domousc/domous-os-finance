@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { calculateFutureDateRange } from "@/lib/dateFilters";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,15 +14,17 @@ import { TrendingUp } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import type { Period } from "@/components/shared/PeriodFilter";
 
 interface ReceivablesListProps {
-  period: string;
+  period: Period;
 }
 
 export const ReceivablesList = ({ period }: ReceivablesListProps) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const dateRange = calculateFutureDateRange(period);
 
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["dashboard-receivables", user?.id, period, statusFilter],
@@ -43,12 +46,19 @@ export const ReceivablesList = ({ period }: ReceivablesListProps) => {
           clients(name),
           services(title)
         `)
-        .eq("company_id", profile.company_id)
-        .order("due_date", { ascending: true });
+        .eq("company_id", profile.company_id);
+
+      if (dateRange.start && dateRange.end) {
+        query = query
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+      }
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter as any);
       }
+
+      query = query.order("due_date", { ascending: true });
 
       const { data, error } = await query.limit(10);
       if (error) throw error;
