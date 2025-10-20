@@ -17,7 +17,8 @@ import Subscriptions from "./pages/superadmin/Subscriptions";
 import Companies from "./pages/superadmin/Companies";
 import Users from "./pages/superadmin/Users";
 import Reports from "./pages/superadmin/Reports";
-import Settings from "./pages/superadmin/Settings";
+import SuperAdminSettings from "./pages/superadmin/Settings";
+import CompanySettings from "./pages/company/Settings";
 import CompanyServices from "./pages/company/Services";
 import Clients from "./pages/company/Clients";
 import ClientProfile from "./pages/company/ClientProfile";
@@ -222,6 +223,16 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/dashboard/settings"
+              element={
+                <ProtectedRoute>
+                  <CompanyRoute>
+                    <CompanySettings />
+                  </CompanyRoute>
+                </ProtectedRoute>
+              }
+            />
                   
                   {/* SuperAdmin Routes */}
               <Route path="/superadmin" element={<SuperAdmin />} />
@@ -230,7 +241,7 @@ const App = () => (
               <Route path="/superadmin/companies" element={<Companies />} />
               <Route path="/superadmin/users" element={<Users />} />
               <Route path="/superadmin/reports" element={<Reports />} />
-              <Route path="/superadmin/settings" element={<Settings />} />
+              <Route path="/superadmin/settings" element={<SuperAdminSettings />} />
                   
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

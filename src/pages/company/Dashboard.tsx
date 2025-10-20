@@ -1,19 +1,21 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/shared/AppLayout";
 import { companyMenuItems } from "@/config/companyMenuItems";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useRole } from "@/contexts/RoleContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DollarSign, Users, FileBarChart } from "lucide-react";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { FinanceOverviewStats } from "@/components/company/finance/FinanceOverviewStats";
+import { ReceivablesList } from "@/components/company/dashboard/ReceivablesList";
+import { PayablesList } from "@/components/company/dashboard/PayablesList";
+import { QuickActions } from "@/components/company/dashboard/QuickActions";
+import { PeriodFilter, type Period } from "@/components/shared/PeriodFilter";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { isSuperAdmin, loading: roleLoading } = useRole();
-  const { subscription, plan, status, daysRemaining, loading, hasActiveSubscription } =
-    useSubscription();
+  const { loading, hasActiveSubscription } = useSubscription();
+  const [period, setPeriod] = useState<Period>("1m");
 
   // Superadmin deve ser redirecionado para o painel de superadmin
   useEffect(() => {
@@ -24,16 +26,7 @@ export default function Dashboard() {
 
   // Usuários normais sem assinatura ativa são redirecionados
   useEffect(() => {
-    console.log("[Dashboard] Checking subscription redirect:", { 
-      roleLoading, 
-      isSuperAdmin, 
-      loading, 
-      hasActiveSubscription 
-    });
-    
-    // CRITICAL: Só redireciona após TODOS os loadings terminarem
     if (!roleLoading && !isSuperAdmin && !loading && !hasActiveSubscription) {
-      console.log("[Dashboard] Redirecting to subscription-expired");
       navigate("/dashboard/subscription-expired");
     }
   }, [roleLoading, isSuperAdmin, loading, hasActiveSubscription, navigate]);
@@ -46,152 +39,36 @@ export default function Dashboard() {
     );
   }
 
-  // Se for superadmin, não renderiza nada (será redirecionado)
-  if (isSuperAdmin) {
+  if (isSuperAdmin || !hasActiveSubscription) {
     return null;
   }
-
-  if (!hasActiveSubscription) {
-    return null;
-  }
-
-  const getStatusColor = () => {
-    switch (status) {
-      case "active":
-        return "default";
-      case "trial":
-        return "secondary";
-      case "expired":
-        return "destructive";
-      default:
-        return "outline";
-    }
-  };
-
-  const getStatusLabel = () => {
-    switch (status) {
-      case "active":
-        return "Ativa";
-      case "trial":
-        return "Trial";
-      case "expired":
-        return "Expirada";
-      case "canceled":
-        return "Cancelada";
-      default:
-        return "Sem assinatura";
-    }
-  };
 
   return (
     <AppLayout
       menuItems={companyMenuItems}
       headerTitle="Domous OS"
-      headerBadge="Painel de Gestão"
+      headerBadge="Dashboard"
     >
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground">
-            Bem-vindo ao painel de gestão
-          </p>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <Breadcrumbs items={[{ label: "Dashboard" }]} />
+            <h1 className="text-2xl font-bold mt-2">Dashboard Financeiro</h1>
+            <p className="text-xs text-muted-foreground">
+              Acompanhe suas métricas financeiras e gerencie seus recebimentos e pagamentos
+            </p>
+          </div>
+          <PeriodFilter period={period} onPeriodChange={setPeriod} />
         </div>
 
-        {status === "trial" && daysRemaining !== null && daysRemaining <= 7 && (
-          <Alert>
-            <AlertDescription>
-              Seu período de trial expira em {daysRemaining}{" "}
-              {daysRemaining === 1 ? "dia" : "dias"}. Considere renovar sua
-              assinatura.
-            </AlertDescription>
-          </Alert>
-        )}
+        <FinanceOverviewStats period={period} />
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Status da Assinatura
-              </CardTitle>
-              <Badge variant={getStatusColor()}>{getStatusLabel()}</Badge>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{plan?.name || "N/A"}</div>
-              <p className="text-xs text-muted-foreground">
-                {plan?.description || "Nenhum plano ativo"}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Plano Atual</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                R$ {plan?.price?.toFixed(2) || "0.00"}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                por {plan?.billing_period === "monthly" ? "mês" : "ano"}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Limite de Usuários
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                0 / {plan?.max_users || 0}
-              </div>
-              <p className="text-xs text-muted-foreground">usuários ativos</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {status === "trial" ? "Dias Restantes" : "Próxima Cobrança"}
-              </CardTitle>
-              <FileBarChart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {status === "trial"
-                  ? daysRemaining || 0
-                  : subscription?.end_date
-                  ? new Date(subscription.end_date).toLocaleDateString("pt-BR")
-                  : "N/A"}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {status === "trial" ? "dias" : "data de renovação"}
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ReceivablesList period={period} />
+          <PayablesList period={period} />
         </div>
 
-        {plan?.features && plan.features.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Recursos do Plano</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {plan.features.map((feature: any, index: number) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-primary" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
+        <QuickActions />
       </div>
     </AppLayout>
   );
