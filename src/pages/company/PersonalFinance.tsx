@@ -5,10 +5,13 @@ import { PersonalFinanceHeader } from "@/components/company/personal/PersonalFin
 import { PersonalFinanceStats } from "@/components/company/personal/PersonalFinanceStats";
 import { PersonalTransactionsTable } from "@/components/company/personal/PersonalTransactionsTable";
 import { TransactionDialog } from "@/components/company/personal/TransactionDialog";
+import { PeriodFilter, type Period, type CustomDateRange } from "@/components/shared/PeriodFilter";
 import { supabase } from "@/integrations/supabase/client";
 
 const PersonalFinance = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [period, setPeriod] = useState<Period>("1m");
+  const [customRange, setCustomRange] = useState<CustomDateRange>();
 
   useEffect(() => {
     const channel = supabase
@@ -38,9 +41,17 @@ const PersonalFinance = () => {
       headerBadge="Controle Pessoal"
     >
       <div className="space-y-6">
-        <PersonalFinanceHeader onAddTransaction={() => setDialogOpen(true)} />
-        <PersonalFinanceStats />
-        <PersonalTransactionsTable />
+        <div className="flex items-center justify-between">
+          <PersonalFinanceHeader onAddTransaction={() => setDialogOpen(true)} />
+          <PeriodFilter 
+            period={period} 
+            onPeriodChange={setPeriod}
+            customRange={customRange}
+            onCustomRangeChange={setCustomRange}
+          />
+        </div>
+        <PersonalFinanceStats period={period} customRange={customRange} />
+        <PersonalTransactionsTable period={period} customRange={customRange} />
         <TransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </div>
     </AppLayout>

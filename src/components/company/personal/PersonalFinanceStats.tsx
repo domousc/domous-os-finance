@@ -2,14 +2,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateDateRange } from "@/lib/dateFilters";
+import type { Period, CustomDateRange } from "@/components/shared/PeriodFilter";
 
-export const PersonalFinanceStats = () => {
+interface PersonalFinanceStatsProps {
+  period: Period;
+  customRange?: CustomDateRange;
+}
+
+export const PersonalFinanceStats = ({ period, customRange }: PersonalFinanceStatsProps) => {
+  const baseRange = calculateDateRange(period);
+  const dateRange = customRange?.from && customRange?.to && period === "custom"
+    ? { start: customRange.from, end: customRange.to }
+    : baseRange;
+
   const { data: stats } = useQuery({
-    queryKey: ["personal-finance-stats"],
+    queryKey: ["personal-finance-stats", period, customRange],
     queryFn: async () => {
-      const { data: transactions, error } = await supabase
-        .from("personal_transactions")
-        .select("*");
+      let query = supabase.from("personal_transactions").select("*");
+
+      if (dateRange.start && dateRange.end) {
+        query = query
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+      }
+
+      const { data: transactions, error } = await query;
 
       if (error) throw error;
 

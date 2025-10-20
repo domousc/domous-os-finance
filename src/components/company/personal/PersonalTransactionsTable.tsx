@@ -4,19 +4,38 @@ import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateDateRange } from "@/lib/dateFilters";
 import { TransactionRow } from "./TransactionRow";
 import { TransactionDialog } from "./TransactionDialog";
+import type { Period, CustomDateRange } from "@/components/shared/PeriodFilter";
 
-export const PersonalTransactionsTable = () => {
+interface PersonalTransactionsTableProps {
+  period: Period;
+  customRange?: CustomDateRange;
+}
+
+
+export const PersonalTransactionsTable = ({ period, customRange }: PersonalTransactionsTableProps) => {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const baseRange = calculateDateRange(period);
+  const dateRange = customRange?.from && customRange?.to && period === "custom"
+    ? { start: customRange.from, end: customRange.to }
+    : baseRange;
+
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ["personal-transactions", typeFilter, statusFilter],
+    queryKey: ["personal-transactions", period, customRange, typeFilter, statusFilter],
     queryFn: async () => {
       let query = supabase.from("personal_transactions").select("*").order("due_date", { ascending: true });
+
+      if (dateRange.start && dateRange.end) {
+        query = query
+          .gte("due_date", dateRange.start.toISOString())
+          .lte("due_date", dateRange.end.toISOString());
+      }
 
       if (typeFilter !== "all") {
         query = query.eq("type", typeFilter as any);

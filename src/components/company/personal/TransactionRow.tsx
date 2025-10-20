@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { SwipeableRow } from "@/components/shared/SwipeableRow";
 import { RescheduleDialog } from "@/components/shared/RescheduleDialog";
+import { EditableValueCell } from "@/components/company/dashboard/EditableValueCell";
 import { useState } from "react";
 
 interface TransactionRowProps {
@@ -114,6 +115,30 @@ export const TransactionRow = ({ transaction, onEdit }: TransactionRowProps) => 
     setRescheduleDialog(null);
   };
 
+  const handleUpdateAmount = async (newAmount: number) => {
+    const { error } = await supabase
+      .from("personal_transactions")
+      .update({ amount: newAmount })
+      .eq("id", transaction.id);
+    
+    if (error) {
+      toast({
+        title: "Erro ao atualizar valor",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+
+    toast({
+      title: "Valor atualizado",
+      description: "O valor foi atualizado com sucesso.",
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["personal-transactions"] });
+    queryClient.invalidateQueries({ queryKey: ["personal-finance-stats"] });
+  };
+
   // Only show swipe actions for "A Pagar" (payable) transactions
   const isPayable = transaction.type === "payable";
 
@@ -137,11 +162,11 @@ export const TransactionRow = ({ transaction, onEdit }: TransactionRowProps) => 
             </TableCell>
             <TableCell className="font-medium">{transaction.description}</TableCell>
             <TableCell>{transaction.category || "-"}</TableCell>
-            <TableCell className="text-right font-bold">
-              {Number(transaction.amount).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
+            <TableCell className="text-right">
+              <EditableValueCell
+                value={transaction.amount}
+                onSave={handleUpdateAmount}
+              />
             </TableCell>
             <TableCell>
               <Badge className={STATUS_MAP[transaction.status as keyof typeof STATUS_MAP].color}>
@@ -197,11 +222,11 @@ export const TransactionRow = ({ transaction, onEdit }: TransactionRowProps) => 
           </TableCell>
           <TableCell className="font-medium">{transaction.description}</TableCell>
           <TableCell>{transaction.category || "-"}</TableCell>
-          <TableCell className="text-right font-bold">
-            {Number(transaction.amount).toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}
+          <TableCell className="text-right">
+            <EditableValueCell
+              value={transaction.amount}
+              onSave={handleUpdateAmount}
+            />
           </TableCell>
           <TableCell>
             <Badge className={STATUS_MAP[transaction.status as keyof typeof STATUS_MAP].color}>
