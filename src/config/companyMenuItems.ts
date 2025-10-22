@@ -8,6 +8,26 @@ export const companyMenuItems: MenuItem[] = [
     path: "/dashboard",
   },
   {
+    icon: TrendingUp,
+    label: "A Receber",
+    path: "/dashboard/invoices/receivable",
+  },
+  {
+    icon: TrendingDown,
+    label: "A Pagar",
+    path: "/dashboard/invoices/payable",
+  },
+  {
+    icon: Package,
+    label: "Despesas Operacionais",
+    path: "/dashboard/finance/expenses",
+  },
+  {
+    icon: Users,
+    label: "Time",
+    path: "/dashboard/finance/team",
+  },
+  {
     icon: Users,
     label: "Clientes",
     path: "/dashboard/clients",
@@ -26,33 +46,6 @@ export const companyMenuItems: MenuItem[] = [
     icon: DollarSign,
     label: "Financeiro",
     path: "/dashboard/finance/overview",
-    submenu: [
-      {
-        icon: LayoutDashboard,
-        label: "Visão Geral",
-        path: "/dashboard/finance/overview",
-      },
-      {
-        icon: TrendingUp,
-        label: "A Receber",
-        path: "/dashboard/invoices/receivable",
-      },
-      {
-        icon: TrendingDown,
-        label: "A Pagar",
-        path: "/dashboard/invoices/payable",
-      },
-      {
-        icon: Package,
-        label: "Despesas Operacionais",
-        path: "/dashboard/finance/expenses",
-      },
-      {
-        icon: Users,
-        label: "Time",
-        path: "/dashboard/finance/team",
-      },
-    ],
   },
   {
     icon: Wallet,
