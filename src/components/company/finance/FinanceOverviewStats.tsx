@@ -252,95 +252,92 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
   const netProjectedColor = (currentStats?.netProjected || 0) >= 0 ? "text-green-600" : "text-destructive";
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{/* Changed to 4 columns on xl screens */}
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">A Receber</CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-600" />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 px-4 pt-3">
+          <CardTitle className="text-xs font-medium">A Receber</CardTitle>
+          <TrendingUp className="h-3.5 w-3.5 text-green-600" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
+        <CardContent className="px-4 pb-3">
+          <div className="text-lg font-bold">
             {formatCurrency(currentStats?.receivable || 0)}
           </div>
-          <p className={`text-xs ${receivableComparison.color} mt-1`}>
+          <p className={`text-[10px] ${receivableComparison.color} mt-0.5`}>
             {receivableComparison.text}
           </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">A Pagar</CardTitle>
-          <TrendingDown className="h-4 w-4 text-destructive" />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 px-4 pt-3">
+          <CardTitle className="text-xs font-medium">A Pagar</CardTitle>
+          <TrendingDown className="h-3.5 w-3.5 text-destructive" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
+        <CardContent className="px-4 pb-3">
+          <div className="text-lg font-bold">
             {formatCurrency(currentStats?.payable || 0)}
           </div>
-          <p className={`text-xs ${payableComparison.color} mt-1`}>
+          <p className={`text-[10px] ${payableComparison.color} mt-0.5`}>
             {payableComparison.text}
           </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Despesas Operacionais</CardTitle>
-          <Activity className="h-4 w-4 text-orange-500" />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 px-4 pt-3">
+          <CardTitle className="text-xs font-medium">Despesas</CardTitle>
+          <Activity className="h-3.5 w-3.5 text-orange-500" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
+        <CardContent className="px-4 pb-3">
+          <div className="text-lg font-bold">
             {formatCurrency(currentStats?.operational || 0)}
           </div>
-          <p className={`text-xs ${operationalComparison.color} mt-1`}>
+          <p className={`text-[10px] ${operationalComparison.color} mt-0.5`}>
             {operationalComparison.text}
           </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Saldo Projetado</CardTitle>
-          <DollarSign className={`h-4 w-4 ${netProjectedColor}`} />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 px-4 pt-3">
+          <CardTitle className="text-xs font-medium">Saldo Projetado</CardTitle>
+          <DollarSign className={`h-3.5 w-3.5 ${netProjectedColor}`} />
         </CardHeader>
-        <CardContent>
-          <div className={`text-2xl font-bold ${netProjectedColor}`}>
+        <CardContent className="px-4 pb-3">
+          <div className={`text-lg font-bold ${netProjectedColor}`}>
             {formatCurrency(currentStats?.netProjected || 0)}
           </div>
-          <p className={`text-xs ${netComparison.color} mt-1`}>
+          <p className={`text-[10px] ${netComparison.color} mt-0.5`}>
             {netComparison.text}
           </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Folha de Pagamento</CardTitle>
-          <Users className="h-4 w-4 text-blue-600" />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 px-4 pt-3">
+          <CardTitle className="text-xs font-medium">Folha</CardTitle>
+          <Users className="h-3.5 w-3.5 text-blue-600" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
+        <CardContent className="px-4 pb-3">
+          <div className="text-lg font-bold">
             {formatCurrency(currentStats?.teamPayroll || 0)}
           </div>
-          <p className={`text-xs ${teamPayrollComparison.color} mt-1`}>
+          <p className={`text-[10px] ${teamPayrollComparison.color} mt-0.5`}>
             {teamPayrollComparison.text}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Pago: {formatCurrency(currentStats?.teamPayrollPaid || 0)}
           </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
-          <AlertCircle className="h-4 w-4 text-destructive" />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 px-4 pt-3">
+          <CardTitle className="text-xs font-medium">Em Atraso</CardTitle>
+          <AlertCircle className="h-3.5 w-3.5 text-destructive" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-destructive">
+        <CardContent className="px-4 pb-3">
+          <div className="text-lg font-bold text-destructive">
             {formatCurrency(currentStats?.overdue || 0)}
           </div>
-          <p className={`text-xs ${overdueComparison.color} mt-1`}>
+          <p className={`text-[10px] ${overdueComparison.color} mt-0.5`}>
             {overdueComparison.text}
           </p>
         </CardContent>

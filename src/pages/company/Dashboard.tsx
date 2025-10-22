@@ -9,7 +9,10 @@ import { FinanceOverviewStats } from "@/components/company/finance/FinanceOvervi
 import { ReceivablesList } from "@/components/company/dashboard/ReceivablesList";
 import { PayablesList } from "@/components/company/dashboard/PayablesList";
 import { QuickActions } from "@/components/company/dashboard/QuickActions";
+import { ExpandedAnalytics } from "@/components/company/dashboard/ExpandedAnalytics";
 import { PeriodFilter, type Period, type CustomDateRange } from "@/components/shared/PeriodFilter";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -17,6 +20,7 @@ export default function Dashboard() {
   const { loading, hasActiveSubscription } = useSubscription();
   const [period, setPeriod] = useState<Period>("1m");
   const [customRange, setCustomRange] = useState<CustomDateRange>();
+  const [showExpandedAnalytics, setShowExpandedAnalytics] = useState(false);
 
   // Superadmin deve ser redirecionado para o painel de superadmin
   useEffect(() => {
@@ -68,6 +72,29 @@ export default function Dashboard() {
         </div>
 
         <FinanceOverviewStats period={period} customRange={customRange} />
+
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setShowExpandedAnalytics(!showExpandedAnalytics)}
+            className="gap-2 hover-scale"
+          >
+            {showExpandedAnalytics ? (
+              <>
+                <ChevronUp className="h-4 w-4" />
+                Ocultar Análises Detalhadas
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                Ver Análises Detalhadas
+              </>
+            )}
+          </Button>
+        </div>
+
+        {showExpandedAnalytics && <ExpandedAnalytics />}
 
         <div className="grid gap-4 lg:grid-cols-2">
           <ReceivablesList period={period} customRange={customRange} />
