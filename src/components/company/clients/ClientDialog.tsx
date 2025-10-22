@@ -405,10 +405,20 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
             />
 
             <div className="flex justify-end gap-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                disabled={form.formState.isSubmitting}
+              >
                 Cancelar
               </Button>
-              <Button type="submit">Salvar</Button>
+              <Button 
+                type="submit" 
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
+              </Button>
             </div>
           </form>
         </Form>
