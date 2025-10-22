@@ -113,7 +113,8 @@ export const formatComparison = (current: number, previous: number, isExpense: b
   const diff = current - previous;
   const percentChange = previous === 0 ? 0 : (diff / previous) * 100;
   
-  if (diff === 0) {
+  // Se a mudança for muito pequena (< 0.5%), considerar como sem mudança
+  if (Math.abs(percentChange) < 0.5) {
     return {
       text: `→ Sem mudança vs período anterior`,
       color: "text-muted-foreground",
@@ -122,9 +123,15 @@ export const formatComparison = (current: number, previous: number, isExpense: b
   }
   
   const isPositive = diff > 0;
-  const color = isExpense 
-    ? (isPositive ? "text-destructive" : "text-green-600")
-    : (isPositive ? "text-green-600" : "text-destructive");
+  
+  // Para despesas: aumentos em amarelo (neutro), diminuições em verde
+  // Para receitas: aumentos em verde, diminuições em vermelho
+  let color: string;
+  if (isExpense) {
+    color = isPositive ? "text-orange-500" : "text-green-600";
+  } else {
+    color = isPositive ? "text-green-600" : "text-destructive";
+  }
   
   const icon = isPositive ? "↑" : "↓";
   const sign = isPositive ? "+" : "";

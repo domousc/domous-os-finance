@@ -246,7 +246,7 @@ export function FinanceOverviewStats({ period, customRange }: FinanceOverviewSta
   const overdueComparison = formatComparison(
     currentStats?.overdue || 0,
     previousStats?.overdue || 0,
-    true
+    false // Em atraso: diminuição é boa (verde), aumento é ruim (vermelho)
   );
 
   const netProjectedColor = (currentStats?.netProjected || 0) >= 0 ? "text-green-600" : "text-destructive";
