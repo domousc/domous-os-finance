@@ -49,7 +49,8 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
       let query = supabase
         .from("payables")
         .select("*")
-        .eq("company_id", profile.company_id);
+        .eq("company_id", profile.company_id)
+        .in("status", ["pending", "overdue"]);
 
       if (dateRange.start && dateRange.end) {
         query = query
@@ -255,7 +256,7 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
   return (
     <Card>
       <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">A Pagar</CardTitle>
+        <CardTitle className="text-base">Pagar</CardTitle>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="w-32 h-8 text-xs">
             <SelectValue />

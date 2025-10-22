@@ -123,7 +123,7 @@ export const ReceivablesList = ({ period, customRange }: ReceivablesListProps) =
   return (
     <Card>
       <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">A Receber</CardTitle>
+        <CardTitle className="text-base">Receber</CardTitle>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-32 h-8 text-xs">
             <SelectValue />
