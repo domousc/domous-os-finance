@@ -4,6 +4,7 @@ import { companyMenuItems } from "@/config/companyMenuItems";
 import { ClientsHeader } from "@/components/company/clients/ClientsHeader";
 import { ClientsTable } from "@/components/company/clients/ClientsTable";
 import { ClientDialog } from "@/components/company/clients/ClientDialog";
+import { ImportClientsDialog } from "@/components/company/clients/ImportClientsDialog";
 
 interface Client {
   id: string;
@@ -28,7 +29,9 @@ interface Client {
 
 export default function Clients() {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleNewClient = () => {
     setSelectedClient(undefined);
@@ -45,15 +48,27 @@ export default function Clients() {
     setSelectedClient(undefined);
   };
 
+  const handleImportComplete = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <AppLayout menuItems={companyMenuItems} headerTitle="Clientes">
       <div className="space-y-6">
-        <ClientsHeader onNewClient={handleNewClient} />
-        <ClientsTable onEditClient={handleEditClient} />
+        <ClientsHeader 
+          onNewClient={handleNewClient}
+          onImport={() => setImportDialogOpen(true)}
+        />
+        <ClientsTable key={refreshKey} onEditClient={handleEditClient} />
         <ClientDialog
           open={dialogOpen}
           onClose={handleCloseDialog}
           client={selectedClient}
+        />
+        <ImportClientsDialog
+          open={importDialogOpen}
+          onClose={() => setImportDialogOpen(false)}
+          onImportComplete={handleImportComplete}
         />
       </div>
     </AppLayout>
