@@ -1178,10 +1178,7 @@ export type Database = {
         Args: { ref_month?: string }
         Returns: number
       }
-      get_user_company_id: {
-        Args: { _user_id: string }
-        Returns: string
-      }
+      get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1189,18 +1186,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      update_overdue_expenses: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_overdue_invoices: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_overdue_personal_transactions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      update_overdue_expenses: { Args: never; Returns: undefined }
+      update_overdue_invoices: { Args: never; Returns: undefined }
+      update_overdue_personal_transactions: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "superadmin" | "admin" | "gestor" | "financeiro" | "operador"
