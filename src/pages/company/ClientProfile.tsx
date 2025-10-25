@@ -8,7 +8,7 @@ import { ClientInfo } from "@/components/company/clients/profile/ClientInfo";
 import { ClientServicesSection } from "@/components/company/clients/profile/ClientServicesSection";
 import { ClientInvoicesSection } from "@/components/company/clients/profile/ClientInvoicesSection";
 import { ClientCommissionsSection } from "@/components/company/clients/profile/ClientCommissionsSection";
-import { LinkServiceDialog } from "@/components/company/clients/profile/LinkServiceDialog";
+import { AddServiceDialog } from "@/components/company/clients/profile/AddServiceDialog";
 
 export default function ClientProfile() {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +40,7 @@ export default function ClientProfile() {
 
         <ClientInvoicesSection clientId={id!} />
 
-        <LinkServiceDialog
+        <AddServiceDialog
           open={linkServiceOpen}
           onClose={() => setLinkServiceOpen(false)}
           clientId={id!}

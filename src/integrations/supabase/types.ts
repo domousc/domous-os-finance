@@ -23,7 +23,9 @@ export type Database = {
           cycles: number
           first_due_date: string | null
           id: string
-          service_id: string
+          package_total_value: number | null
+          service_id: string | null
+          service_name: string | null
           start_date: string
           status: string
           updated_at: string
@@ -36,7 +38,9 @@ export type Database = {
           cycles?: number
           first_due_date?: string | null
           id?: string
-          service_id: string
+          package_total_value?: number | null
+          service_id?: string | null
+          service_name?: string | null
           start_date?: string
           status?: string
           updated_at?: string
@@ -49,7 +53,9 @@ export type Database = {
           cycles?: number
           first_due_date?: string | null
           id?: string
-          service_id?: string
+          package_total_value?: number | null
+          service_id?: string | null
+          service_name?: string | null
           start_date?: string
           status?: string
           updated_at?: string
