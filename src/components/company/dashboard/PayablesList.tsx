@@ -12,11 +12,28 @@ import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SwipeableRow } from "@/components/shared/SwipeableRow";
 import { RescheduleDialog } from "@/components/shared/RescheduleDialog";
-import { TrendingDown } from "lucide-react";
+import { TrendingDown, MoreVertical, Check, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Period, CustomDateRange } from "@/components/shared/PeriodFilter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PayablesListProps {
   period: Period;
@@ -28,6 +45,7 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
   const queryClient = useQueryClient();
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [rescheduleDialog, setRescheduleDialog] = useState<{ open: boolean; payableId: string; currentDate: Date; type: string } | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; payableId: string; type: string } | null>(null);
   const baseRange = calculateDateRange(period);
   const dateRange = customRange?.from && customRange?.to && period === "custom"
     ? { start: customRange.from, end: customRange.to }
@@ -253,6 +271,55 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteDialog) return;
+
+    let error;
+
+    switch (deleteDialog.type) {
+      case "commission":
+        const { error: commError } = await supabase
+          .from("partner_commissions")
+          .delete()
+          .eq("id", deleteDialog.payableId);
+        error = commError;
+        break;
+      case "expense":
+        const { error: expError } = await supabase
+          .from("company_expenses")
+          .delete()
+          .eq("id", deleteDialog.payableId);
+        error = expError;
+        break;
+      case "salary":
+        const { error: salError } = await supabase
+          .from("team_payments")
+          .delete()
+          .eq("id", deleteDialog.payableId);
+        error = salError;
+        break;
+      default:
+        return;
+    }
+
+    if (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Excluído com sucesso",
+      description: "O pagamento foi excluído.",
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["dashboard-payables"] });
+    setDeleteDialog(null);
+  };
+
   return (
     <Card>
       <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0">
@@ -278,6 +345,7 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
               <TableHead className="text-xs">Valor</TableHead>
               <TableHead className="text-xs">Vencimento</TableHead>
               <TableHead className="text-xs">Status</TableHead>
+              <TableHead className="text-xs w-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -285,7 +353,7 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
               <TableSkeleton columns={5} rows={5} />
             ) : !payables || payables.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32">
+                <TableCell colSpan={6} className="h-32">
                   <EmptyState
                     icon={TrendingDown}
                     title="Nenhum pagamento encontrado"
@@ -329,6 +397,30 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
                         {getStatusLabel(payable.status)}
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {payable.status !== "paid" && (
+                            <DropdownMenuItem onClick={() => handleMarkAsPaid(payable.id, payable.type)}>
+                              <Check className="mr-2 h-4 w-4" />
+                              Marcar como pago
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem
+                            onClick={() => setDeleteDialog({ open: true, payableId: payable.id, type: payable.type })}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
                   </TableRow>
                 </SwipeableRow>
               ))
@@ -343,6 +435,24 @@ export const PayablesList = ({ period, customRange }: PayablesListProps) => {
           onConfirm={handleReschedule}
           currentDate={rescheduleDialog.currentDate}
         />
+      )}
+      {deleteDialog && (
+        <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </Card>
   );
