@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
 
-type UserRole = "superadmin" | "admin" | "gestor" | "financeiro" | "operador";
+type UserRole = "superadmin" | "admin" | "viewer" | "gestor" | "financeiro" | "operador";
 
 type RoleContextType = {
   roles: UserRole[];
@@ -44,6 +44,10 @@ export const RoleProvider = ({ children }: { children: React.ReactNode }) => {
   const hasRole = (role: UserRole) => roles.includes(role);
   const isSuperAdmin = roles.includes("superadmin");
   const isCompanyUser = !isSuperAdmin && roles.length > 0;
+  
+  // Admin tem acesso completo, viewer tem acesso limitado
+  const isAdmin = roles.includes("admin");
+  const isViewer = roles.includes("viewer");
 
   const value = {
     roles,

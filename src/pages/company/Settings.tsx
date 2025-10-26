@@ -3,8 +3,9 @@ import { companyMenuItems } from "@/config/companyMenuItems";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { SubscriptionInfo } from "@/components/company/settings/SubscriptionInfo";
 import { CompanyInfo } from "@/components/company/settings/CompanyInfo";
+import { UsersTab } from "@/components/company/settings/UsersTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, CreditCard } from "lucide-react";
+import { Building2, CreditCard, Users } from "lucide-react";
 
 export default function Settings() {
   return (
@@ -25,10 +26,14 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="company" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
             <TabsTrigger value="company" className="flex items-center gap-2 text-xs">
               <Building2 className="h-3.5 w-3.5" />
               <span>Empresa</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2 text-xs">
+              <Users className="h-3.5 w-3.5" />
+              <span>Usuários</span>
             </TabsTrigger>
             <TabsTrigger value="subscription" className="flex items-center gap-2 text-xs">
               <CreditCard className="h-3.5 w-3.5" />
@@ -38,6 +43,10 @@ export default function Settings() {
 
           <TabsContent value="company" className="mt-4">
             <CompanyInfo />
+          </TabsContent>
+
+          <TabsContent value="users" className="mt-4">
+            <UsersTab />
           </TabsContent>
 
           <TabsContent value="subscription" className="mt-4">

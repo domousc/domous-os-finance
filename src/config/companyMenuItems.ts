@@ -1,6 +1,29 @@
 import { MenuItem } from "@/components/shared/AppLayout";
 import { Users, LayoutDashboard, Settings, DollarSign, Package, TrendingUp, TrendingDown, Handshake, Wallet } from "lucide-react";
 
+type UserRole = "admin" | "viewer";
+
+// Função para filtrar itens do menu baseado no role
+export const getMenuItemsByRole = (roles: string[]): MenuItem[] => {
+  const isAdmin = roles.includes("admin") || roles.includes("superadmin");
+  const isViewer = roles.includes("viewer");
+  
+  // Se é admin ou superadmin, retorna tudo
+  if (isAdmin) {
+    return companyMenuItems;
+  }
+  
+  // Se é viewer, filtra apenas os permitidos
+  if (isViewer) {
+    return companyMenuItems.filter(item => 
+      ["/dashboard", "/dashboard/clients", "/dashboard/partners", "/dashboard/personal-finance"].includes(item.path)
+    );
+  }
+  
+  // Por padrão, retorna tudo
+  return companyMenuItems;
+};
+
 export const companyMenuItems: MenuItem[] = [
   {
     icon: LayoutDashboard,
