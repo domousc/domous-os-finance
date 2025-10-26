@@ -1197,7 +1197,13 @@ export type Database = {
       update_overdue_personal_transactions: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "superadmin" | "admin" | "gestor" | "financeiro" | "operador"
+      app_role:
+        | "superadmin"
+        | "admin"
+        | "gestor"
+        | "financeiro"
+        | "operador"
+        | "viewer"
       billing_period: "monthly" | "semiannual" | "annual"
       employment_type: "fixed" | "variable"
       expense_billing_cycle: "monthly" | "annual" | "one_time"
@@ -1348,7 +1354,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["superadmin", "admin", "gestor", "financeiro", "operador"],
+      app_role: [
+        "superadmin",
+        "admin",
+        "gestor",
+        "financeiro",
+        "operador",
+        "viewer",
+      ],
       billing_period: ["monthly", "semiannual", "annual"],
       employment_type: ["fixed", "variable"],
       expense_billing_cycle: ["monthly", "annual", "one_time"],
