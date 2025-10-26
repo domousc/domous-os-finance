@@ -10,6 +10,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useRole } from "@/contexts/RoleContext";
+import { getMenuItemsByRole } from "@/config/companyMenuItems";
 
 export type MenuItem = {
   icon: LucideIcon;
@@ -35,6 +37,10 @@ export const AppLayout = ({
   const location = useLocation();
   const [isHovered, setIsHovered] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+  const { roles } = useRole();
+  
+  // Filtrar menu baseado no role do usuário
+  const filteredMenuItems = getMenuItemsByRole(roles);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -112,7 +118,7 @@ export const AppLayout = ({
           onMouseLeave={() => setIsHovered(false)}
         >
           <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
-            {menuItems.map((item) => renderMenuItem(item))}
+            {filteredMenuItems.map((item) => renderMenuItem(item))}
           </nav>
         </aside>
 
