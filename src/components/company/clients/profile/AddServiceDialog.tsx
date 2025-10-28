@@ -110,12 +110,29 @@ export function AddServiceDialog({
 
     setIsSubmitting(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para adicionar serviços",
+        });
+        throw new Error("Usuário não autenticado");
+      }
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("company_id")
+        .eq("id", user.id)
         .single();
 
       if (!profile?.company_id) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Empresa não encontrada. Verifique seu perfil.",
+        });
         throw new Error("Empresa não encontrada");
       }
 
