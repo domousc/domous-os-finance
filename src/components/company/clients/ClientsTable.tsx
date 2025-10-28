@@ -201,19 +201,19 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
     <>
       <div className="border rounded-lg overflow-x-auto">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Valor Mensal</TableHead>
-              <TableHead>Dia Pgto</TableHead>
-              <TableHead>Parcelas</TableHead>
-              <TableHead>Data Início</TableHead>
-              <TableHead>Total Pago</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Telefone</TableHead>
+                <TableHead>Valor Mensal</TableHead>
+                <TableHead>Dia Pgto</TableHead>
+                <TableHead>Mensalidades</TableHead>
+                <TableHead>Data Início</TableHead>
+                <TableHead>Total Pago</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
           <TableBody>
             {clients.length === 0 ? (
               <TableRow>

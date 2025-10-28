@@ -151,9 +151,8 @@ export function ClientServicesSection({
             <TableHeader>
               <TableRow>
                 <TableHead>Serviço</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Pacote Total</TableHead>
-                <TableHead>Ciclos</TableHead>
+                <TableHead>Valor Total</TableHead>
+                <TableHead>Mensalidades</TableHead>
                 <TableHead>Data Início</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -165,19 +164,12 @@ export function ClientServicesSection({
                   <TableCell className="font-medium">
                     {getServiceName(service)}
                   </TableCell>
-                  <TableCell>
-                    R$ {getServicePrice(service).toFixed(2)}
+                  <TableCell className="font-semibold text-primary">
+                    R$ {(service.package_total_value || getServicePrice(service)).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    {service.package_total_value ? (
-                      <Badge variant="secondary">
-                        R$ {service.package_total_value.toFixed(2)}
-                      </Badge>
-                    ) : (
-                      "-"
-                    )}
+                    <Badge variant="outline">{service.cycles}x</Badge>
                   </TableCell>
-                  <TableCell>{service.cycles}</TableCell>
                   <TableCell>
                     {format(new Date(service.start_date), "dd/MM/yyyy")}
                   </TableCell>

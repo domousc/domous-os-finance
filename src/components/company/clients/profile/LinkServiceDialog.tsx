@@ -32,7 +32,7 @@ import {
 const linkServiceSchema = z.object({
   service_id: z.string().min(1, "Serviço é obrigatório"),
   custom_price: z.string().optional(),
-  cycles: z.string().min(1, "Quantidade de ciclos é obrigatória"),
+  cycles: z.string().min(1, "Mensalidades é obrigatória"),
   start_date: z.string().min(1, "Data de início é obrigatória"),
   first_due_date: z.string().optional(),
 });
@@ -213,7 +213,7 @@ export function LinkServiceDialog({
               name="cycles"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantidade de Ciclos *</FormLabel>
+                  <FormLabel>Mensalidades *</FormLabel>
                   <FormControl>
                     <Input type="number" min="1" {...field} />
                   </FormControl>
