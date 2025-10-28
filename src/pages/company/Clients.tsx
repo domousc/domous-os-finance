@@ -6,6 +6,18 @@ import { ClientsTable } from "@/components/company/clients/ClientsTable";
 import { ClientDialog } from "@/components/company/clients/ClientDialog";
 import { ImportClientsDialog } from "@/components/company/clients/ImportClientsDialog";
 
+interface ClientService {
+  id: string;
+  custom_price: number | null;
+  cycles: number;
+  start_date: string;
+  first_due_date: string | null;
+  service_id: string;
+  services: {
+    billing_cycle: string;
+  } | null;
+}
+
 interface Client {
   id: string;
   name: string;
@@ -25,6 +37,7 @@ interface Client {
   company_id: string;
   created_at: string;
   updated_at: string;
+  client_services?: ClientService[];
 }
 
 export default function Clients() {

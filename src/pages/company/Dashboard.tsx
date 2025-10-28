@@ -13,6 +13,8 @@ import { ExpandedAnalytics } from "@/components/company/dashboard/ExpandedAnalyt
 import { PeriodFilter, type Period, type CustomDateRange } from "@/components/shared/PeriodFilter";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { MonthlyRevenueChart } from "@/components/company/dashboard/charts/MonthlyRevenueChart";
+import { FinancialSpreadsheet } from "@/components/company/dashboard/FinancialSpreadsheet";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -95,6 +97,11 @@ export default function Dashboard() {
         </div>
 
         {showExpandedAnalytics && <ExpandedAnalytics />}
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <MonthlyRevenueChart />
+          <FinancialSpreadsheet />
+        </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <ReceivablesList period={period} customRange={customRange} />

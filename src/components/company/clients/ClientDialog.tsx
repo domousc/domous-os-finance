@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,6 +22,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, MapPin } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -32,7 +34,6 @@ import {
 
 const clientSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
-  company_name: z.string().optional(),
   responsible_name: z.string().optional(),
   email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   phone: z.string().optional(),
@@ -75,12 +76,12 @@ interface ClientDialogProps {
 export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [addressOpen, setAddressOpen] = useState(false);
 
   const form = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
       name: "",
-      company_name: "",
       responsible_name: "",
       email: "",
       phone: "",
@@ -99,7 +100,6 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
     if (client) {
       form.reset({
         name: client.name,
-        company_name: client.company_name || "",
         responsible_name: client.responsible_name || "",
         email: client.email || "",
         phone: client.phone || "",
@@ -115,7 +115,6 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
     } else {
       form.reset({
         name: "",
-        company_name: "",
         responsible_name: "",
         email: "",
         phone: "",
@@ -145,7 +144,7 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
 
       const clientData = {
         name: data.name,
-        company_name: data.company_name || null,
+        company_name: null,
         responsible_name: data.responsible_name || null,
         status: data.status,
         email: data.email || null,
@@ -203,36 +202,6 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="responsible_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome do Responsável</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="company_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome da Empresa</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
               name="name"
@@ -241,6 +210,20 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
                   <FormLabel>Nome (Identificação) *</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Como deseja identificar este cliente" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="responsible_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome do Responsável</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -307,63 +290,76 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Endereço</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Collapsible open={addressOpen} onOpenChange={setAddressOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" className="w-full justify-between" type="button">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Informações de Endereço
+                  </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${addressOpen ? "rotate-180" : ""}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 pt-4">
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Endereço</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cidade</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="city"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cidade</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="state"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estado</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="zip_code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CEP</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormField
+                    control={form.control}
+                    name="zip_code"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <FormField
               control={form.control}

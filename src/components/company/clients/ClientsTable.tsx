@@ -24,13 +24,39 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+interface ClientService {
+  id: string;
+  custom_price: number | null;
+  cycles: number;
+  start_date: string;
+  first_due_date: string | null;
+  service_id: string;
+  services: {
+    billing_cycle: string;
+  } | null;
+}
+
 interface Client {
   id: string;
   name: string;
+  company_name: string | null;
+  responsible_name: string | null;
   email: string | null;
   phone: string | null;
   document: string | null;
+  cpf: string | null;
+  cnpj: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  notes: string | null;
   status: string;
+  company_id: string;
+  created_at: string;
+  updated_at: string;
+  client_services: ClientService[];
+  totalPaid?: number;
 }
 
 interface ClientsTableProps {
@@ -69,11 +95,43 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
     try {
       const { data, error } = await supabase
         .from("clients")
-        .select("*")
+        .select(`
+          *,
+          client_services (
+            id,
+            custom_price,
+            cycles,
+            start_date,
+            first_due_date,
+            service_id,
+            services (
+              billing_cycle
+            )
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setClients(data || []);
+
+      // Fetch paid totals for each client
+      const clientsWithTotals = await Promise.all(
+        (data || []).map(async (client) => {
+          const { data: invoices } = await supabase
+            .from("invoices")
+            .select("amount")
+            .eq("client_id", client.id)
+            .eq("status", "paid");
+
+          const totalPaid = invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
+          
+          return {
+            ...client,
+            totalPaid,
+          };
+        })
+      );
+
+      setClients(clientsWithTotals as any);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -112,20 +170,46 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
     }
   };
 
+  const getPaymentDay = (client: Client) => {
+    if (client.client_services && client.client_services.length > 0) {
+      const firstService = client.client_services[0];
+      const dueDate = firstService.first_due_date || firstService.start_date;
+      return new Date(dueDate).getDate();
+    }
+    return "-";
+  };
+
+  const getMonthlyValue = (client: Client) => {
+    if (client.client_services && client.client_services.length > 0) {
+      return client.client_services[0].custom_price || 0;
+    }
+    return 0;
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
   if (loading) {
     return <div>Carregando...</div>;
   }
 
   return (
     <>
-      <div className="border rounded-lg">
+      <div className="border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
-              <TableHead>E-mail</TableHead>
               <TableHead>Telefone</TableHead>
-              <TableHead>CPF/CNPJ</TableHead>
+              <TableHead>Valor Mensal</TableHead>
+              <TableHead>Dia Pgto</TableHead>
+              <TableHead>Parcelas</TableHead>
+              <TableHead>Data Início</TableHead>
+              <TableHead>Total Pago</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
@@ -133,58 +217,78 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
           <TableBody>
             {clients.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={9} className="text-center text-muted-foreground">
                   Nenhum cliente cadastrado
                 </TableCell>
               </TableRow>
             ) : (
-              clients.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>{client.email || "-"}</TableCell>
-                  <TableCell>{client.phone || "-"}</TableCell>
-                  <TableCell>{client.document || "-"}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        client.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {client.status === "active" ? "Ativo" : "Inativo"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/dashboard/clients/${client.id}`)}
+              clients.map((client: any) => {
+                const monthlyValue = getMonthlyValue(client);
+                const paymentDay = getPaymentDay(client);
+                const cycles = client.client_services?.[0]?.cycles || "-";
+                const startDate = client.client_services?.[0]?.start_date 
+                  ? new Date(client.client_services[0].start_date).toLocaleDateString("pt-BR")
+                  : "-";
+
+                return (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">{client.name}</TableCell>
+                    <TableCell>{client.phone || "-"}</TableCell>
+                    <TableCell>
+                      <span className="font-semibold text-primary">
+                        {formatCurrency(monthlyValue)}
+                      </span>
+                    </TableCell>
+                    <TableCell>{paymentDay}</TableCell>
+                    <TableCell>{cycles}</TableCell>
+                    <TableCell className="text-sm">{startDate}</TableCell>
+                    <TableCell>
+                      <span className="font-semibold text-green-600">
+                        {formatCurrency(client.totalPaid || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          client.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
                       >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEditClient(client)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setClientToDelete(client.id);
-                          setDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        {client.status === "active" ? "Ativo" : "Inativo"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/dashboard/clients/${client.id}`)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEditClient(client)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setClientToDelete(client.id);
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
