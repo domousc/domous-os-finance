@@ -7,6 +7,8 @@ import { PersonalTransactionsTable } from "@/components/company/personal/Persona
 import { TransactionDialog } from "@/components/company/personal/TransactionDialog";
 import { PeriodFilter, type Period, type CustomDateRange } from "@/components/shared/PeriodFilter";
 import { supabase } from "@/integrations/supabase/client";
+import { PersonalIncomeChart } from "@/components/company/personal/PersonalIncomeChart";
+import { PersonalExpenseChart } from "@/components/company/personal/PersonalExpenseChart";
 
 const PersonalFinance = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -51,6 +53,12 @@ const PersonalFinance = () => {
           />
         </div>
         <PersonalFinanceStats period={period} customRange={customRange} />
+        
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PersonalIncomeChart />
+          <PersonalExpenseChart />
+        </div>
+
         <PersonalTransactionsTable period={period} customRange={customRange} />
         <TransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </div>
