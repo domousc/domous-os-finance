@@ -170,6 +170,30 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
     }
   };
 
+  const handleToggleStatus = async (clientId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({ status: newStatus })
+        .eq("id", clientId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Status atualizado",
+        description: `Cliente ${newStatus === "active" ? "ativado" : "desativado"} com sucesso`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar status",
+        description: error.message,
+      });
+    }
+  };
+
   const getPaymentDay = (client: Client) => {
     if (client.client_services && client.client_services.length > 0) {
       const firstService = client.client_services[0];
@@ -248,15 +272,16 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${
+                      <button
+                        onClick={() => handleToggleStatus(client.id, client.status)}
+                        className={`px-2 py-1 rounded-full text-xs cursor-pointer transition-colors hover:opacity-80 ${
                           client.status === "active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-red-100 text-red-800 hover:bg-red-200"
                         }`}
                       >
                         {client.status === "active" ? "Ativo" : "Inativo"}
-                      </span>
+                      </button>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
